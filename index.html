@@ -1,0 +1,2552 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B0C0E">
+<title>星藏 · Lunar Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600&display=swap">
+<style>
+/*
+VOICE  tender, quiet, nocturnal — a private star atlas of remembered days
+IDEA   an old celestial chart (四象天区) where each photo is a star placed by its lunar date
+PICTURE the rotatable 3D chart itself, full width on desktop, full bleed on phones
+COLOUR plum night #101618/#1b2528, four sector hues (jade, coral, champagne, lilac), warm gold→cinnabar for selection
+TYPE   Noto Serif SC for names and dates, system sans for UI; 4 sizes
+LAYOUT desktop: chart + right detail/list rail; phone: chart + thumb dock + bottom sheet
+*/
+:root{color-scheme:dark;--bg:#101618;--deep:#1b2528;--glass:rgba(25,34,38,.66);--glass2:rgba(19,26,29,.82);--edge:rgba(255,255,255,.09);--line:#344348;--gold:#e9d5af;--coral:#e0cfb2;--jade:#88e8d0;--lilac:#c5e3ec;--warm:linear-gradient(135deg,#e9d5af,#e0cfb2);--ink:#f2f4f5;--dim:#ccd5d8;--muted:#a8b5ba;--warn:#e8dcc7;--serif:"Noto Serif SC","Songti SC","STSong",Georgia,serif;--sans:system-ui,-apple-system,"PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;--mono:ui-monospace,"SFMono-Regular",Consolas,monospace;--dock:0px}
+:root[data-theme=light],:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:radial-gradient(ellipse 120% 70% at 50% -10%,var(--deep),var(--bg) 62%) fixed var(--bg);color:var(--ink);font:16px/1.6 var(--sans);overflow-x:clip}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.55;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+[hidden]{display:none!important}
+.calm *,.calm *::before,.calm *::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.glass{background:var(--glass);border:1px solid var(--edge);-webkit-backdrop-filter:blur(16px) saturate(1.15);backdrop-filter:blur(16px) saturate(1.15)}
+
+/* header */
+header{position:sticky;top:0;z-index:20;border-bottom:1px solid var(--line);background:rgba(16,22,24,.86);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);padding-top:env(safe-area-inset-top)}
+.head{max-width:1640px;margin:auto;height:68px;display:flex;align-items:center;gap:clamp(14px,3vw,44px);padding:0 max(env(safe-area-inset-left),clamp(16px,3vw,40px))}
+.brand{display:flex;align-items:center;gap:10px;white-space:nowrap;text-decoration:none;color:inherit}
+.brand svg{width:34px;height:34px}
+.brand b{font:600 1.35rem/1 var(--serif);letter-spacing:.08em}
+.brand small{font:12.5px var(--sans);color:var(--muted);letter-spacing:.12em}
+nav{display:flex;gap:6px;height:100%}
+.tab{border:0;background:none;color:var(--dim);padding:0 12px;position:relative;font-size:1rem}
+.tab[aria-current=page]{color:var(--gold)}
+.tab[aria-current=page]::after{content:"";position:absolute;left:10px;right:10px;bottom:0;height:2px;border-radius:2px;background:var(--warm)}
+.headActions{margin-left:auto;display:flex;align-items:center;gap:10px}
+.searchShell{position:relative;display:flex;align-items:center;gap:8px;height:44px;width:min(30vw,320px);padding:0 12px;border:1px solid var(--line);border-radius:10px;background:rgba(27,37,40,.7);color:var(--muted)}
+.searchShell:focus-within{border-color:#c5e3ecaa}
+.searchShell input{flex:1;height:100%;border:0;background:none;color:var(--ink);font-size:16px}
+.searchShell input:focus{outline:none}
+.searchShell kbd{font:12.5px var(--mono);border:1px solid var(--line);border-radius:4px;padding:0 6px;color:var(--muted)}
+.results{position:absolute;top:50px;right:0;width:min(400px,92vw);max-height:min(420px,60vh);overflow:auto;border-radius:12px;padding:6px;z-index:30;background:var(--glass2);box-shadow:0 18px 40px #0009}
+.btn{min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:rgba(30,41,45,.75);white-space:nowrap;font-size:.95rem}
+.btn:hover{border-color:#c8bdac;color:var(--gold)}
+.btn.primary{border:0;color:#241917;background:var(--warm);font-weight:650;box-shadow:0 0 22px #e0cfb23d,inset 0 1px 0 #fff7}
+.btn.primary:hover{color:#241917;filter:brightness(1.06)}
+.btn.ghost{background:none}
+.btn.danger{color:var(--warn);border-color:#614c48}
+.btn.icon{width:44px;padding:0}
+.btn.sm{min-height:36px;padding:5px 11px;font-size:.88rem}
+
+/* page */
+main{max-width:1640px;margin:auto;padding:22px max(env(safe-area-inset-right),clamp(16px,3vw,40px)) 28px}
+.intro{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:16px}
+.intro h1{font:500 clamp(32px,3.4vw,46px)/1.08 var(--serif);letter-spacing:.06em;margin:0 0 6px;text-wrap:balance}
+.intro p{margin:0;color:var(--dim)}
+.today{border-left:1px solid #4c5c62;padding:2px 0 2px 14px;white-space:nowrap}
+.today small{display:block;color:var(--muted);font-size:12.5px;letter-spacing:.08em}
+.today strong{display:block;font:500 1.05rem/1.5 var(--serif);color:var(--gold)}
+.today span{color:var(--dim);font-size:.9rem}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,380px);gap:18px;align-items:start}
+.stage{position:relative;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#101618}
+.sky{position:relative;height:clamp(480px,calc(100vh - 230px),860px);background:radial-gradient(ellipse at 46% 50%,#243338 0%,#1b2528 36%,#101618 80%);isolation:isolate}
+.sky canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+.sky canvas.dragging{cursor:grabbing}.sky canvas.over{cursor:pointer}
+.corner{position:absolute;left:18px;top:16px;pointer-events:none}
+.corner b{display:block;font:600 1rem var(--serif);color:var(--gold);letter-spacing:.12em}
+.corner span{color:var(--dim);font-size:.85rem}
+.controls{position:absolute;right:14px;top:14px;display:flex;flex-direction:column;gap:6px;padding:6px;border-radius:14px}
+.controls .btn{background:none;border-color:transparent;color:var(--dim)}
+.controls .btn:hover{color:var(--gold);border-color:var(--line)}
+.legend{position:absolute;left:14px;bottom:14px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;padding:8px 14px;border-radius:12px;font-size:.88rem;color:var(--dim);max-width:calc(100% - 28px)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:1px}
+.legend .mine{background:var(--warm);box-shadow:0 0 8px #e0cfb2}
+.legend .demo{border:1.5px solid var(--lilac);box-shadow:0 0 6px #c5e3ec88}
+.legend .keys{color:var(--muted)}
+.skyEmpty{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;padding:20px 22px;border-radius:16px;max-width:min(360px,86%)}
+.skyEmpty p{margin:0 0 12px;color:var(--dim)}
+.randomBtn{position:absolute;right:14px;bottom:14px}
+
+/* side rail */
+.side{display:grid;gap:14px}
+.sheetHandle,.sheetTabs,.sheetClose,.sheetTop{display:none}
+.sheetBody{display:grid;gap:14px}
+.card{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,rgba(27,37,40,.92),rgba(20,27,29,.92));overflow:hidden}
+.cardHead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px}
+.cardHead h2{margin:0;font:600 1rem var(--serif);letter-spacing:.1em;color:var(--gold)}
+.photo{position:relative;aspect-ratio:16/10;background:#1a2529}
+.photo img{width:100%;height:100%;object-fit:cover;display:block}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;line-height:1;padding:5px 8px;border-radius:999px;border:1px solid var(--edge);white-space:nowrap}
+.badge.demo{color:#e6f3f7;background:#394e55cc;border-color:#c5e3ec66}
+.badge.mine{color:#241917;background:var(--warm);border:0}
+.badge.temp{color:var(--warn);background:#332725cc;border-color:#e0cfb255}
+.photo .badges{position:absolute;left:12px;top:12px;display:flex;gap:6px}
+.details{padding:14px 16px 16px}
+.lunarBig{font:600 1.05rem/1.4 var(--serif);color:var(--gold);margin:0}
+.details h3{font:500 1.6rem/1.2 var(--serif);margin:4px 0 10px;overflow-wrap:anywhere}
+.compare{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:0;font-size:.92rem}
+.compare dt{color:var(--muted)}
+.compare dd{margin:0;color:var(--ink)}
+.note{margin:12px 0 0;color:var(--dim);white-space:pre-wrap;overflow-wrap:anywhere}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.demoNote{margin:12px 0 0;font-size:.88rem;color:#d9e7ec;background:#2a393e;border:1px solid #c5e3ec33;border-radius:10px;padding:8px 10px}
+.empty{padding:18px 16px;margin:0;color:var(--dim)}
+.filters{display:flex;gap:6px;padding:0 16px 10px;flex-wrap:wrap}
+.chip{min-height:36px;border-radius:999px;border:1px solid var(--line);background:none;color:var(--dim);padding:4px 12px;font-size:.88rem}
+.chip[aria-pressed=true]{color:#241917;background:var(--gold);border-color:var(--gold)}
+.rows{max-height:min(46vh,520px);overflow:auto;padding:0 10px 8px}
+.row{width:100%;display:flex;align-items:center;gap:12px;text-align:left;border:0;border-top:1px solid #29363a;background:none;padding:10px 6px;border-radius:8px;min-height:60px}
+.row:hover,.row[aria-current=true]{background:#253237}
+.row img{width:46px;height:42px;object-fit:cover;border-radius:8px;flex:none;background:#253135}
+.row .t{flex:1;min-width:0}
+.row strong{display:block;font-weight:600;font-size:.95rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row small{display:block;color:var(--dim);font-size:.83rem}
+.row .dot{flex:none;width:10px;height:10px;border-radius:50%}
+.row .dot.mine{background:var(--warm)}
+.row .dot.demo{border:1.5px solid var(--lilac)}
+
+/* archive */
+.archive{border:1px solid var(--line);border-radius:16px;padding:16px;background:linear-gradient(180deg,rgba(27,37,40,.9),rgba(20,27,29,.9))}
+.archive .filters{padding:0 0 12px}
+.yearHead{font:600 1.05rem var(--serif);color:var(--gold);margin:16px 0 10px;letter-spacing:.08em}
+.yearHead:first-of-type{margin-top:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.tile{border:1px solid var(--line);border-radius:12px;background:#182023;padding:0;text-align:left;overflow:hidden}
+.tile:hover{border-color:#ccc0ac}
+.tile img{display:block;width:100%;aspect-ratio:3/2;object-fit:cover}
+.tile div{padding:10px 12px}
+.tile strong{display:flex;gap:6px;align-items:center;justify-content:space-between}
+.tile strong span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile small{display:block;color:var(--gold);font-size:.85rem}
+.tile em{display:block;font-style:normal;color:var(--muted);font-size:.8rem}
+.foot{display:flex;justify-content:space-between;gap:12px;margin-top:14px;color:var(--muted);font-size:.88rem}
+.link{border:0;background:none;color:var(--gold);text-decoration:underline;text-underline-offset:3px;padding:0;min-height:32px}
+
+/* dialogs */
+dialog{width:min(560px,calc(100% - 24px));max-height:min(92vh,900px);overflow:auto;padding:20px;border-radius:18px;border:1px solid #3e4e54;color:var(--ink);background:linear-gradient(180deg,#1c2528,#131a1c);box-shadow:0 30px 90px #000c}
+dialog::backdrop{background:#070a0bcc;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.dHead{display:flex;align-items:start;justify-content:space-between;gap:10px;margin-bottom:8px}
+dialog h2{font:500 1.7rem/1.2 var(--serif);margin:0}
+.drop{border:1.5px dashed #52646a;border-radius:14px;padding:12px;text-align:center;background:#141c1f}
+.drop.over{border-color:var(--gold);background:#1d2629}
+.drop p{margin:6px 0 10px;color:var(--dim);font-size:.92rem}
+.drop .row2{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.preview{width:100%;max-height:240px;object-fit:contain;border-radius:10px;background:#101618;display:block;margin-top:10px}
+.hint{margin:8px 0 0;font-size:.86rem;color:var(--dim);text-align:left}
+.hint.warn{color:var(--warn)}
+.field{display:grid;gap:5px;margin-top:14px;font-size:.92rem;color:var(--dim)}
+.field input,.field textarea,.field select{width:100%;min-height:44px;padding:9px 11px;font-size:16px;border-radius:10px;border:1px solid #3e4e54;background:#101618;color:var(--ink)}
+.field textarea{min-height:84px;resize:vertical}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;width:max-content}
+.seg button{border:0;background:none;padding:6px 14px;min-height:38px;color:var(--dim)}
+.seg button[aria-pressed=true]{background:#324248;color:var(--gold)}
+.dateRow{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.lunarSel{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:8px}
+.convert{margin:8px 0 0;padding:10px 12px;border-radius:10px;background:#182023;border:1px solid #304046;font-size:.92rem;color:var(--ink)}
+.convert b{color:var(--gold);font-weight:600}
+.issue{margin:12px 0 0;color:var(--warn);font-size:.92rem}
+.formFoot{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;flex-wrap:wrap}
+.section{border-top:1px solid #2e3c41;padding-top:14px;margin-top:14px}
+.section h3{margin:0 0 8px;font:600 1.05rem var(--serif);color:var(--gold)}
+.section p{margin:6px 0;color:var(--dim);font-size:.92rem}
+.meter{height:8px;border-radius:99px;background:#253135;overflow:hidden;margin:8px 0}
+.meter i{display:block;height:100%;width:0;background:var(--warm)}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;color:var(--ink)}
+.switch input{width:22px;height:22px;accent-color:#e0cfb2}
+.keys{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:.9rem;color:var(--dim);margin:0}
+.keys dt{font:13px var(--mono);color:var(--gold)}
+.keys dd{margin:0}
+.toast{position:fixed;z-index:60;left:50%;bottom:calc(22px + var(--dock));transform:translateX(-50%);display:flex;align-items:center;gap:12px;max-width:min(92vw,520px);padding:10px 14px;border-radius:12px;background:var(--glass2);border:1px solid #535e65;box-shadow:0 10px 30px #000a;font-size:.95rem}
+.toast button{border:0;background:none;color:var(--gold);font-weight:600;text-decoration:underline;min-height:36px}
+.dock{display:none}
+
+/* phone */
+@media (max-width:900px){
+  :root{--dock:calc(74px + env(safe-area-inset-bottom))}
+  .head{height:56px;gap:10px;padding:0 max(env(safe-area-inset-left),14px)}
+  .brand small,.headActions .searchShell kbd{display:none}
+  .brand b{font-size:1.15rem}
+  .brand svg{width:28px;height:28px}
+  nav .tab{padding:0 9px;font-size:.95rem}
+  .headActions>.btn{display:none}
+  .searchShell{position:fixed;left:10px;right:10px;top:calc(62px + env(safe-area-inset-top));width:auto;height:50px;z-index:40;background:var(--glass2);box-shadow:0 12px 30px #000a;display:none}
+  body.searching .searchShell{display:flex}
+  .results{top:56px;width:100%}
+  main{padding:0 0 calc(var(--dock) + 16px)}
+  .intro{display:none}
+  .layout{display:block}
+  .stage{border:0;border-radius:0}
+  .sky{height:calc(100dvh - 56px - var(--dock) - env(safe-area-inset-top))}
+  .corner{left:14px;top:12px}
+  .controls{right:10px;top:10px}
+  .legend{left:10px;bottom:10px;font-size:.84rem;padding:6px 10px}
+  .legend .keys,.randomBtn{display:none}
+  .side{position:fixed;z-index:35;left:0;right:0;bottom:0;display:block;max-height:min(80dvh,720px);overflow:hidden;border-radius:20px 20px 0 0;background:var(--glass2);border:1px solid var(--edge);border-bottom:0;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);transform:translateY(105%);transition:transform .32s cubic-bezier(.2,.8,.2,1);padding-bottom:calc(var(--dock) + 4px);box-shadow:0 -18px 40px #0009;visibility:hidden}
+  .side.open{transform:translateY(var(--drag,0));visibility:visible}
+  .sheetHandle{display:block;width:100%;height:28px;border:0;background:none;position:relative;touch-action:none}
+  .sheetHandle::before{content:"";position:absolute;left:50%;top:10px;width:44px;height:5px;margin-left:-22px;border-radius:9px;background:#89999e}
+  .sheetTop{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 12px 8px}
+  .sheetTabs{display:flex;gap:6px}
+  .sheetClose{display:inline-flex}
+  .side .card{border:0;border-radius:0;background:none}
+  .side[data-view=detail] .listCard,.side[data-view=list] .detailCard{display:none}
+  .sheetBody{display:block;overflow:auto;max-height:calc(min(80dvh,720px) - 80px - var(--dock))}
+  .rows{max-height:none}
+  .photo{aspect-ratio:16/9}
+  .archive{border-radius:0;border-left:0;border-right:0;padding:14px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .foot{padding:0 14px}
+  .dock{display:grid;grid-template-columns:repeat(5,1fr);align-items:end;position:fixed;z-index:45;left:0;right:0;bottom:0;height:var(--dock);padding:6px 6px env(safe-area-inset-bottom);background:rgba(16,22,24,.9);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-top:1px solid var(--edge)}
+  .dock button{border:0;background:none;color:var(--dim);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:58px;font-size:12.5px}
+  .dock button[aria-pressed=true]{color:var(--gold)}
+  .dock .fab{align-self:center;width:62px;height:62px;min-height:0;margin:-18px auto 0;border-radius:50%;color:#241917;background:var(--warm);box-shadow:0 6px 24px #e0cfb266,inset 0 1px 0 #fff8;font-weight:650}
+  .dock .fab svg{width:26px;height:26px}
+  dialog{width:100%;max-width:none;margin:auto 0 0;border-radius:20px 20px 0 0;max-height:94dvh;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+}
+@media (max-width:420px){.lunarSel{grid-template-columns:1fr 1fr}.lunarSel select:first-child{grid-column:1/-1}}
+
+/* ===================== Liquid Glass layer ===================== */
+:root{--lx:1;--ly:1;--la:135deg;--rimHi:rgba(248,244,237,.62);--rimLo:rgba(233,221,201,.2);
+  --rim:inset calc(var(--lx)*1px) calc(var(--ly)*1px) 0 rgba(248,244,237,.2),inset calc(var(--lx)*-1px) calc(var(--ly)*-1px) 0 rgba(0,0,0,.4);
+  --spring:cubic-bezier(.3,1.25,.45,1);--ease:cubic-bezier(.2,.8,.2,1)}
+body{background:radial-gradient(ellipse 90% 60% at 18% -8%,rgba(136,232,208,.10),transparent 60%),radial-gradient(ellipse 80% 60% at 92% 0%,rgba(224,207,179,.10),transparent 60%),radial-gradient(ellipse 120% 70% at 50% -10%,var(--deep),var(--bg) 62%) fixed var(--bg)}
+header{background:linear-gradient(180deg,rgba(24,33,36,.78),rgba(16,22,24,.72));box-shadow:inset 0 -1px 0 rgba(249,236,220,.06),0 10px 30px rgba(4,7,8,.35);border-bottom-color:rgba(255,255,255,.06)}
+.card,.archive{position:relative}
+.rim::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;z-index:2;
+  background:linear-gradient(var(--la),var(--rimHi),rgba(255,255,255,.1) 26%,rgba(255,255,255,0) 50%,rgba(136,232,208,.12) 78%,var(--rimLo));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
+.glass,.card,.archive,.results,.toast{background:linear-gradient(160deg,rgba(51,69,76,.6),rgba(22,31,34,.8) 58%,rgba(15,22,24,.88));-webkit-backdrop-filter:blur(22px) saturate(1.35);backdrop-filter:blur(22px) saturate(1.35);border-color:rgba(255,255,255,.07);box-shadow:var(--rim),0 18px 50px rgba(4,8,10,.45)}
+dialog{background:linear-gradient(160deg,rgba(44,59,65,.95),rgba(17,24,26,.97) 70%);border-color:rgba(255,255,255,.08);box-shadow:var(--rim),0 40px 100px rgba(0,0,0,.7);transform-origin:50% 50%}
+.drop{background:rgba(14,20,22,.55);box-shadow:inset 0 1px 12px rgba(0,0,0,.35)}
+.field input,.field textarea,.field select{background:rgba(11,16,17,.7);box-shadow:inset 0 1px 3px rgba(0,0,0,.5)}
+.convert{background:rgba(30,41,44,.6);box-shadow:var(--rim)}
+.stage{background:#0c1113;border-color:rgba(255,255,255,.07);box-shadow:var(--rim),0 30px 80px rgba(4,7,8,.55)}
+.sky{background:radial-gradient(ellipse at 50% 52%,#26363b 0%,#172023 40%,#0c1113 82%)}
+.sky::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;background:radial-gradient(ellipse at 50% 50%,transparent 55%,rgba(5,9,10,.55) 100%)}
+.sky canvas{z-index:1}
+.aurora{position:absolute;inset:-12%;z-index:0;pointer-events:none;filter:blur(46px) saturate(1.2);opacity:.8;mix-blend-mode:screen}
+.aurora i{position:absolute;border-radius:50%;will-change:transform}
+.aurora i:nth-child(1){left:6%;top:14%;width:62%;height:26%;background:radial-gradient(closest-side,rgba(136,232,208,.5),transparent);transform:rotate(-18deg);animation:aur1 28s ease-in-out infinite alternate}
+.aurora i:nth-child(2){right:4%;top:26%;width:56%;height:24%;background:radial-gradient(closest-side,rgba(221,203,172,.42),transparent);transform:rotate(16deg);animation:aur2 33s ease-in-out infinite alternate}
+.aurora i:nth-child(3){left:22%;bottom:10%;width:60%;height:30%;background:radial-gradient(closest-side,rgba(155,205,222,.48),transparent);transform:rotate(-6deg);animation:aur3 38s ease-in-out infinite alternate}
+.aurora i:nth-child(4){left:38%;top:38%;width:30%;height:26%;background:radial-gradient(closest-side,rgba(233,213,175,.22),transparent);animation:aur2 45s ease-in-out infinite alternate-reverse}
+@keyframes aur1{to{transform:rotate(-6deg) translate(9%,7%) scale(1.18)}}
+@keyframes aur2{to{transform:rotate(4deg) translate(-8%,6%) scale(1.12)}}
+@keyframes aur3{to{transform:rotate(8deg) translate(6%,-8%) scale(1.2)}}
+.corner,.controls,.legend,.skyEmpty,.skyDock{z-index:3}
+.legend{top:66px;bottom:auto;left:16px;border-radius:14px}
+.controls{border-radius:18px}
+.skyDock{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px}
+.skyDock .btn{background:transparent;border-color:transparent;border-radius:999px}
+.skyDock .btn:hover{background:rgba(255,255,255,.06)}
+.lensBtn,.dock .fab.lensBtn{position:relative;width:64px;height:64px;padding:0;border:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#301f1c;
+  background:radial-gradient(circle at 34% 26%,#fcf9ed 0 7%,#f6e4c6 17%,#e8c99d 44%,#e1d1b5 80%,#c2b091 100%);
+  box-shadow:inset 0 0 0 1px rgba(249,239,221,.7),inset 0 -7px 14px rgba(122,75,68,.35),inset 0 4px 8px rgba(255,255,255,.55),0 10px 28px rgba(221,203,172,.5),0 0 54px rgba(233,213,175,.32)}
+.lensBtn::before{content:"";position:absolute;inset:7px;border-radius:50%;border:1px solid rgba(255,255,255,.5);border-bottom-color:rgba(106,63,56,.3);border-right-color:rgba(106,63,56,.18);pointer-events:none}
+.lensBtn svg{width:27px;height:27px;stroke-width:2}
+.lensBtn:hover{transform:translateY(-2px) scale(1.05);box-shadow:inset 0 0 0 1px rgba(249,239,221,.8),inset 0 -7px 14px rgba(122,75,68,.3),inset 0 4px 8px rgba(255,255,255,.6),0 14px 34px rgba(221,203,172,.62),0 0 70px rgba(233,213,175,.45)}
+.lensBtn:active{transform:scale(.92);transition-duration:.06s}
+.skyDock .lensBtn{margin:-18px 6px}
+/* hover & press */
+.btn,.chip,.tab,.dock button,.row,.tile,.lensBtn,.link{transition:transform .18s var(--ease),box-shadow .25s,border-color .25s,background-color .25s,color .2s,filter .2s}
+.btn{box-shadow:var(--rim)}
+.btn:hover{transform:translateY(-1px);box-shadow:var(--rim),0 8px 20px rgba(6,11,13,.45)}
+.btn:active,.chip:active,.tab:active,.dock button:active,.link:active{transform:scale(.95);transition-duration:.06s}
+.btn.primary{box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 -3px 8px rgba(132,85,78,.25),0 0 22px rgba(224,207,178,.35)}
+.btn.primary:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 0 32px rgba(224,207,178,.55)}
+.controls .btn,.controls .btn:hover{box-shadow:none}
+.row{position:relative;border-top-color:rgba(255,255,255,.05)}
+.row:hover{transform:translateX(3px);background:rgba(255,255,255,.05)}
+.row[aria-current=true]{background:linear-gradient(90deg,rgba(224,207,178,.16),rgba(255,255,255,.03));box-shadow:inset 2px 0 0 #e0cfb2}
+.row:active{transform:scale(.985)}
+.row img{box-shadow:0 0 0 1px rgba(255,255,255,.1)}
+.tile{position:relative;overflow:hidden;background:rgba(20,28,31,.7);border-color:rgba(255,255,255,.07);box-shadow:var(--rim)}
+.tile img{transition:transform .5s var(--ease)}
+.tile:hover{transform:translateY(-3px);border-color:rgba(230,217,193,.35);box-shadow:var(--rim),0 16px 34px rgba(5,10,11,.55)}
+.tile:hover img{transform:scale(1.05)}
+.tile:active{transform:scale(.97)}
+/* sliding lenses */
+.lensGroup{position:relative;isolation:isolate}
+.lensGroup>button{position:relative;z-index:1}
+.lens{position:absolute;left:0;top:0;z-index:0;border-radius:999px;pointer-events:none;opacity:0}
+.lensGroup.ready>.lens{transition:transform .46s var(--spring),width .46s var(--spring),height .3s,opacity .2s}
+.chipLens{background:radial-gradient(circle at 30% 18%,#fbf4e4,#e9d5af 55%,#d8cab3);box-shadow:inset 0 1px 0 rgba(255,255,255,.75),inset 0 -2px 6px rgba(142,95,88,.28),0 4px 14px rgba(224,207,179,.35)}
+.chip{background:rgba(255,255,255,.03)}
+.chip[aria-pressed=true]{background:transparent;border-color:transparent;color:#241917;font-weight:600}
+.navLens,.sheetTabs>.lens,.seg>.lens{background:linear-gradient(160deg,rgba(255,255,255,.17),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.1);box-shadow:var(--rim),0 4px 16px rgba(4,8,10,.4)}
+.sheetTabs .chip[aria-pressed=true]{color:var(--gold);background:transparent}
+.seg>.lens{border-radius:8px}
+.seg button[aria-pressed=true]{background:transparent}
+nav.lensGroup{align-items:center}
+.tab{height:40px;border-radius:999px}
+.tab[aria-current=page]::after{display:none}
+/* star <-> photo */
+.photo img{transition:opacity .22s}
+.photo.awaiting img{opacity:0}
+.flyer{position:fixed;z-index:90;pointer-events:none;background:#1a2529 center/cover no-repeat;border-radius:4px;transform-origin:50% 50%;will-change:transform,opacity,filter;box-shadow:0 0 0 1px rgba(249,236,220,.35),0 0 38px rgba(224,207,179,.45)}
+.detailClose{width:36px;height:36px;min-height:0;padding:0;border-radius:50%}
+.cardHead .badge{margin-left:auto}
+.photo{box-shadow:inset 0 -40px 40px -20px rgba(11,17,18,.6)}
+.photo::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(var(--la),rgba(251,240,229,.16),transparent 35%)}
+@media (min-width:901px){
+  .side{position:sticky;top:84px;height:calc(100vh - 104px);min-height:520px;display:flex;flex-direction:column}
+  .sheetBody{flex:1;min-height:0;display:flex;flex-direction:column;gap:14px}
+  .detailCard{flex:none;max-height:72%;overflow:auto}
+  .listCard{flex:1;min-height:170px;display:flex;flex-direction:column}
+  .listCard .rows{flex:1;max-height:none;min-height:0}
+}
+@media (max-width:900px){
+  :root{--dock:calc(94px + env(safe-area-inset-bottom))}
+  .dock{left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));height:70px;padding:0 6px;border-radius:30px;align-items:center;border:1px solid rgba(255,255,255,.07);
+    background:linear-gradient(160deg,rgba(53,73,81,.58),rgba(18,25,28,.84));box-shadow:var(--rim),0 18px 44px rgba(4,7,8,.6)}
+  .dock button{min-height:56px;border-radius:22px}
+  .dock button[aria-pressed=true]{background:rgba(255,255,255,.07)}
+  .dock .fab.lensBtn{width:66px;height:66px;margin:-30px auto 0}
+  body[data-page=atlas] main{padding-bottom:0}
+  body[data-page=atlas] .foot{display:none}
+  .sky{height:calc(100dvh - 56px - env(safe-area-inset-top))}
+  .legend{top:58px;left:12px}
+  .skyDock{display:none}
+  .side{background:linear-gradient(170deg,rgba(48,66,72,.82),rgba(16,23,25,.94));border-color:rgba(255,255,255,.08);box-shadow:var(--rim),0 -20px 50px rgba(4,7,8,.6)}
+  .side .card{background:none;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none}
+  .side .card.rim::before{display:none}
+  .detailClose{display:none}
+  .toast{bottom:calc(var(--dock) + 12px)}
+  .archive{background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none}
+  .archive.rim::before{display:none}
+}
+
+/* ===================== v4 · ink, petrol, moonstone, champagne ===================== */
+:root{--bg:#070B12;--deep:#0D1B26;--petrol:#14505C;--petrol2:#1F6F78;--moon:#C9D6DF;--champ:#E6D3A8;
+  --ink:#EEF3F6;--dim:#C2CED7;--muted:#91A3B1;--gold:#E6D3A8;--coral:#E39A8C;--jade:#7FD6C8;--lilac:#AFB8E8;--warn:#F0B6A6;--line:#1C2E3B;--edge:rgba(201,214,223,.12);
+  --warm:linear-gradient(135deg,#F5EBD2 0%,#E6D3A8 46%,#C7B187 100%);
+  --rimHi:rgba(236,244,248,.72);--rimLo:rgba(127,214,200,.22);
+  --rim:inset calc(var(--lx)*1px) calc(var(--ly)*1px) 0 rgba(225,238,245,.18),inset calc(var(--lx)*-1px) calc(var(--ly)*-1px) 0 rgba(0,0,0,.48);
+  --blurS:blur(8px) saturate(1.15);--blurM:blur(18px) saturate(1.3);--blurL:blur(34px) saturate(1.45);
+  --glass:radial-gradient(120% 90% at 0% 0%,rgba(201,214,223,.09),transparent 55%),linear-gradient(165deg,rgba(38,76,90,.50) 0%,rgba(16,34,46,.66) 34%,rgba(9,18,27,.80) 70%,rgba(6,11,18,.88) 100%);
+  --glassL:radial-gradient(130% 90% at 0% 0%,rgba(201,214,223,.10),transparent 55%),radial-gradient(90% 70% at 100% 100%,rgba(31,111,120,.16),transparent 60%),linear-gradient(170deg,rgba(28,58,72,.74) 0%,rgba(13,28,38,.88) 40%,rgba(7,13,21,.95) 100%)}
+body{background:radial-gradient(70% 50% at 12% -6%,rgba(31,111,120,.30),transparent 62%),radial-gradient(60% 45% at 92% 2%,rgba(201,214,223,.10),transparent 60%),radial-gradient(90% 60% at 50% 115%,rgba(20,80,92,.22),transparent 65%),linear-gradient(180deg,#0B1520 0%,#08101A 38%,#070B12 70%,#05080D 100%) fixed #070B12}
+header{background:linear-gradient(180deg,rgba(14,28,38,.80),rgba(7,11,18,.66));-webkit-backdrop-filter:var(--blurM);backdrop-filter:var(--blurM);border-bottom-color:rgba(201,214,223,.08)}
+.glass,.results,.toast{background:var(--glass)}
+.controls,.legend{-webkit-backdrop-filter:var(--blurS);backdrop-filter:var(--blurS);background:linear-gradient(160deg,rgba(30,62,74,.40),rgba(8,16,24,.52) 60%,rgba(6,11,18,.6))}
+.skyDock,.dock,.skyEmpty{-webkit-backdrop-filter:var(--blurM);backdrop-filter:var(--blurM)}
+.skyDock{background:linear-gradient(165deg,rgba(40,80,94,.46),rgba(12,26,36,.66) 45%,rgba(6,11,18,.78))}
+.card,.archive,.results{-webkit-backdrop-filter:var(--blurL);backdrop-filter:var(--blurL);background:var(--glassL)}
+dialog{background:var(--glassL),#08111A;border-color:rgba(201,214,223,.12)}
+.drop,.field input,.field textarea,.field select{background:rgba(5,10,16,.7)}
+.convert{background:rgba(16,40,50,.55)}
+.sky{background:radial-gradient(ellipse at 50% 52%,#123241 0%,#0B1C28 42%,#060A10 84%)}
+.stage{background:#060A10;border-color:rgba(201,214,223,.08)}
+.aurora{filter:blur(64px) saturate(1.1);opacity:.66}
+.aurora i:nth-child(1){background:radial-gradient(closest-side,rgba(64,176,170,.55),transparent)}
+.aurora i:nth-child(2){background:radial-gradient(closest-side,rgba(170,196,214,.34),transparent)}
+.aurora i:nth-child(3){background:radial-gradient(closest-side,rgba(31,111,120,.62),transparent)}
+.aurora i:nth-child(4){background:radial-gradient(closest-side,rgba(230,211,168,.16),transparent)}
+.corner b,.today strong,.lunarBig,.cardHead h2,.yearHead,.section h3,.tile small{color:var(--champ)}
+.tab[aria-current=page]{color:var(--champ)}
+.btn.primary{color:#14222A;background:var(--warm)}
+.btn.primary:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 0 30px rgba(230,211,168,.4)}
+.btn:hover{border-color:rgba(201,214,223,.35);color:var(--ink)}
+.lensBtn,.dock .fab.lensBtn{color:#1B2A30;background:radial-gradient(circle at 34% 26%,#FFFDF6 0 7%,#F5EBD3 18%,#E6D3A8 46%,#BFA77A 82%,#8E7A55 100%);
+  box-shadow:inset 0 0 0 1px rgba(255,250,236,.7),inset 0 -7px 14px rgba(20,60,70,.35),inset 0 4px 8px rgba(255,255,255,.55),0 10px 28px rgba(0,0,0,.45),0 0 46px rgba(127,214,200,.22),0 0 30px rgba(230,211,168,.25)}
+.lensBtn:hover{box-shadow:inset 0 0 0 1px rgba(255,250,236,.85),inset 0 -7px 14px rgba(20,60,70,.3),inset 0 4px 8px rgba(255,255,255,.6),0 14px 34px rgba(0,0,0,.5),0 0 60px rgba(127,214,200,.32),0 0 40px rgba(230,211,168,.35)}
+.chipLens{background:radial-gradient(circle at 30% 18%,#FBF6EA,#E6D3A8 58%,#CDB68A)}
+.chip[aria-pressed=true]{color:#14222A}
+.sheetTabs .chip[aria-pressed=true]{color:var(--champ)}
+.row[aria-current=true]{background:linear-gradient(90deg,rgba(127,214,200,.14),rgba(255,255,255,.02));box-shadow:inset 2px 0 0 var(--jade)}
+.badge.demo{color:#E4EDF2;background:rgba(30,62,74,.82);border-color:rgba(201,214,223,.35)}
+.badge.mine{color:#14222A;background:var(--warm)}
+.badge.temp{color:var(--warn);background:rgba(60,26,24,.7);border-color:rgba(240,182,166,.35)}
+.legend .mine,.row .dot.mine{background:var(--warm);box-shadow:0 0 8px rgba(230,211,168,.7)}
+.legend .demo,.row .dot.demo{border-color:var(--moon);box-shadow:0 0 6px rgba(201,214,223,.55)}
+.demoNote{color:#DCE6EC;background:rgba(20,48,58,.6);border-color:rgba(201,214,223,.2)}
+.flyer{background-color:#0F1F2A;box-shadow:0 0 0 1px rgba(225,238,245,.35),0 0 38px rgba(127,214,200,.35)}
+.meter i{background:linear-gradient(90deg,#1F6F78,#7FD6C8 60%,#E6D3A8)}
+.switch input{accent-color:#7FD6C8}
+:focus-visible{outline-color:var(--champ)}
+/* rounded icon system */
+svg.i{stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.lensBtn svg.i{stroke-width:2.1}
+/* AI example labelling */
+.photo{overflow:hidden}
+.photoTag{position:absolute;right:10px;bottom:10px;z-index:1;font-size:12px;line-height:1;padding:5px 9px;border-radius:999px;color:#DCE6EC;background:rgba(7,11,18,.62);border:1px solid rgba(201,214,223,.25);-webkit-backdrop-filter:var(--blurS);backdrop-filter:var(--blurS)}
+/* specular sheen that follows the pointer */
+.btn,.chip,.tab,.dock button,.lensBtn{position:relative;overflow:hidden;isolation:isolate}
+.btn::after,.chip::after,.tab::after,.dock button::after,.lensBtn::after{content:"";display:block;position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:1;
+  background:radial-gradient(140px circle at var(--mx,50%) var(--my,-30%),rgba(236,246,250,.32),rgba(236,246,250,.08) 38%,transparent 68%);opacity:0;transition:opacity .55s ease}
+.lensBtn::after{background:radial-gradient(70px circle at var(--mx,40%) var(--my,30%),rgba(255,255,255,.55),rgba(255,255,255,.1) 45%,transparent 70%)}
+.tab[aria-current=page]::after{display:block}
+@media (hover:hover) and (pointer:fine){
+  .btn:hover::after,.chip:hover::after,.tab:hover::after,.dock button:hover::after,.lensBtn:hover::after{opacity:1;transition-duration:.18s}
+}
+.btn:focus-visible::after,.chip:focus-visible::after,.tab:focus-visible::after,.dock button:focus-visible::after,.lensBtn:focus-visible::after{opacity:.8}
+.pressed::after{opacity:1!important;transition-duration:.06s!important}
+.btn.pressed,.chip.pressed,.tab.pressed,.dock button.pressed{transform:scale(.95)}
+.lensBtn.pressed{transform:scale(.92)}
+/* soft lift, photo zoom, smooth leave */
+.tile{transition:transform .6s cubic-bezier(.2,.8,.2,1),box-shadow .6s,border-color .5s}
+.tile img{transition:transform 1s cubic-bezier(.2,.8,.2,1),filter .7s}
+.detailCard{transition:transform .6s cubic-bezier(.2,.8,.2,1),box-shadow .6s}
+.detailCard .photo img{transition:transform 1.1s cubic-bezier(.2,.8,.2,1),opacity .22s,filter .7s}
+.row{transition:transform .45s cubic-bezier(.2,.8,.2,1),background-color .4s,box-shadow .4s}
+@media (hover:hover) and (pointer:fine){
+  .tile:hover{transform:translateY(-5px);transition-duration:.35s;border-color:rgba(201,214,223,.3);box-shadow:var(--rim),0 22px 40px rgba(2,6,10,.6)}
+  .tile:hover img{transform:scale(1.07);filter:saturate(1.08) brightness(1.04);transition-duration:.9s}
+  .detailCard:hover{transform:translateY(-2px);box-shadow:var(--rim),0 26px 60px rgba(2,6,10,.55)}
+  .detailCard:hover .photo img{transform:scale(1.045)}
+  .row:hover{transform:translate(2px,-1px);transition-duration:.25s}
+}
+@media (hover:none){.btn:hover,.row:hover,.tile:hover,.lensBtn:hover{transform:none}.tile:hover img{transform:none}}
+.tile:focus-visible{transform:translateY(-5px);box-shadow:var(--rim),0 0 0 2px var(--champ),0 22px 40px rgba(2,6,10,.6)}
+.tile:focus-visible img{transform:scale(1.07)}
+.row:focus-visible{background:rgba(255,255,255,.06)}
+.tile.pressed{transform:scale(.97);transition-duration:.12s}
+.tile.pressed img{transform:scale(1.04)}
+.row.pressed{transform:scale(.985);background:rgba(255,255,255,.07)}
+/* star preview */
+.peek{position:absolute;z-index:4;left:0;top:0;display:flex;gap:10px;align-items:center;width:258px;padding:8px;border-radius:14px;pointer-events:none;opacity:0;
+  transform:translate(var(--px,0),var(--py,0)) translateY(6px) scale(.96);transform-origin:0 100%;transition:opacity .32s ease,transform .38s cubic-bezier(.2,.8,.2,1);
+  -webkit-backdrop-filter:var(--blurM);backdrop-filter:var(--blurM);box-shadow:var(--rim),0 16px 34px rgba(2,6,10,.55)}
+.peek.show{opacity:1;transform:translate(var(--px,0),var(--py,0)) scale(1);transition-duration:.18s,.26s}
+.peek img{width:86px;height:58px;object-fit:cover;border-radius:9px;flex:none;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
+.peek div{min-width:0}
+.peek strong{display:block;font:600 .95rem/1.3 var(--serif);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.peek small{display:block;color:var(--champ);font-size:.82rem}
+.peek em{display:block;font-style:normal;color:var(--muted);font-size:.76rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.calm .tile:hover,.calm .tile:focus-visible,.calm .detailCard:hover,.calm .row:hover,.calm .tile.pressed{transform:none}
+.calm .tile:hover img,.calm .tile:focus-visible img,.calm .detailCard:hover .photo img,.calm .tile.pressed img{transform:none}
+@media (max-width:900px){
+  .side{background:var(--glassL);-webkit-backdrop-filter:var(--blurL);backdrop-filter:var(--blurL)}
+  .dock{background:linear-gradient(165deg,rgba(40,80,94,.5),rgba(12,26,36,.74) 45%,rgba(6,11,18,.86))}
+  .peek{width:236px}
+}
+
+/* ===================== v5 · one story, one star ===================== */
+.modeSwitch{position:absolute;left:16px;top:64px;z-index:3;display:flex;gap:2px;padding:4px;border-radius:999px}
+.modeSwitch .chip{min-height:34px;border:0;background:transparent}
+.legend{top:110px;bottom:auto;left:16px;max-width:min(560px,calc(100% - 120px))}
+.legend i{border:0;box-shadow:0 0 8px currentColor}
+.skyEmpty{z-index:3;max-width:min(400px,88%);text-align:center}
+.skyEmpty p{line-height:1.7}
+.skyEmpty b{font:600 1.1rem var(--serif);color:var(--champ)}
+@media (max-width:1240px) and (min-width:901px){.legend .keys{display:none}}
+@media (max-width:900px){
+  .modeSwitch{left:12px;top:58px}
+  .legend{top:108px;bottom:auto;left:12px;font-size:.8rem;padding:6px 10px;gap:4px 10px}
+}
+
+/* ===================== v6 · midnight ultramarine → indigo → violet ===================== */
+:root{--bg:#08081F;--deep:#12124A;--ink:#F5F4FF;--dim:#D4D2F0;--muted:#A9A6D2;--gold:#DCD6FF;--champ:#DCD6FF;--pearl:#F5F4FF;
+  --violet:#7B5CFF;--indigo:#4D4BF0;--ultra:#2A3BD9;--jade:#8FDCD4;--coral:#F2A7BB;--lilac:#B7B4FF;--warn:#FFB8C6;
+  --line:rgba(205,200,255,.08);--edge:rgba(205,200,255,.06);
+  --warm:linear-gradient(135deg,#6C5CFF 0%,#5747F2 50%,#7A4EEA 100%);
+  --rimHi:transparent;--rimLo:transparent;--rim:inset 0 1px 0 rgba(255,255,255,.045);
+  --tint:linear-gradient(160deg,rgba(58,62,178,.32),rgba(44,32,128,.36) 52%,rgba(76,44,150,.34));
+  --tintL:linear-gradient(165deg,rgba(44,48,150,.52),rgba(32,26,108,.60) 55%,rgba(56,32,118,.58));
+  --glass:var(--tint);--glassL:var(--tintL);
+  --blurS:blur(14px) saturate(1.4);--blurM:blur(26px) saturate(1.5);--blurL:blur(42px) saturate(1.6)}
+body{background:
+  radial-gradient(60% 55% at 6% -4%,rgba(42,59,217,.58),transparent 72%),
+  radial-gradient(55% 52% at 94% 6%,rgba(123,92,255,.44),transparent 74%),
+  radial-gradient(75% 62% at 50% 52%,rgba(62,50,204,.30),transparent 76%),
+  radial-gradient(60% 52% at 12% 100%,rgba(100,54,196,.40),transparent 74%),
+  radial-gradient(58% 48% at 96% 96%,rgba(38,72,222,.36),transparent 72%),
+  linear-gradient(180deg,#0C0F36 0%,#0A0B2C 46%,#08081F 100%);background-attachment:fixed;background-color:#08081F}
+header{background:linear-gradient(180deg,rgba(16,18,64,.62),rgba(16,18,64,0));border-bottom:0;box-shadow:none;-webkit-backdrop-filter:var(--blurM);backdrop-filter:var(--blurM);-webkit-mask-image:linear-gradient(180deg,#000 72%,transparent 100%);mask-image:linear-gradient(180deg,#000 72%,transparent 100%);padding-bottom:14px;margin-bottom:-14px}
+.rim::before{display:none}
+.stage{background:transparent;border:0;box-shadow:none;border-radius:28px}
+.sky{border-radius:28px;background:radial-gradient(62% 58% at 50% 50%,rgba(64,58,214,.30),transparent 76%),radial-gradient(46% 42% at 28% 28%,rgba(42,59,217,.24),transparent 72%),radial-gradient(46% 42% at 74% 72%,rgba(123,92,255,.22),transparent 74%)}
+.sky::after{display:none}
+.aurora{inset:0;filter:blur(70px) saturate(1.3);opacity:.72;-webkit-mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 45%,transparent 100%);mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 45%,transparent 100%)}
+.sky{overflow:visible}
+.stage{overflow:visible}
+.aurora i:nth-child(1){background:radial-gradient(closest-side,rgba(42,59,217,.58),transparent)}
+.aurora i:nth-child(2){background:radial-gradient(closest-side,rgba(123,92,255,.46),transparent)}
+.aurora i:nth-child(3){background:radial-gradient(closest-side,rgba(82,62,232,.50),transparent)}
+.aurora i:nth-child(4){background:radial-gradient(closest-side,rgba(168,128,255,.22),transparent)}
+.glass,.results,.toast,.controls,.legend,.skyDock,.modeSwitch,.skyEmpty,.peek{background:var(--tint);border:0;box-shadow:none}
+.controls,.legend,.modeSwitch{-webkit-backdrop-filter:var(--blurS);backdrop-filter:var(--blurS)}
+.skyDock,.skyEmpty,.peek,.toast,.results{-webkit-backdrop-filter:var(--blurM);backdrop-filter:var(--blurM)}
+.results,.toast{box-shadow:0 12px 36px rgba(8,6,40,.28)}
+.card,.archive{background:var(--tintL);border:0;box-shadow:0 10px 40px rgba(8,6,40,.18);-webkit-backdrop-filter:var(--blurL);backdrop-filter:var(--blurL)}
+dialog{background:linear-gradient(165deg,#1E2070 0%,#181456 55%,#22165E 100%);border:0;box-shadow:0 30px 80px rgba(6,4,30,.45)}
+dialog::backdrop{background:rgba(8,8,31,.6);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.intro h1,.details h3,.peek strong,dialog h2{color:var(--pearl)}
+.corner b,.today strong,.lunarBig,.cardHead h2,.yearHead,.section h3,.tile small,.peek small,.convert b{color:#D4CCFF}
+.tab{color:var(--dim)}
+.tab[aria-current=page]{color:var(--pearl)}
+.navLens,.sheetTabs>.lens,.seg>.lens{background:rgba(255,255,255,.13);border:0;box-shadow:none}
+.chip{background:transparent;border:0;color:var(--dim)}
+.chipLens{background:rgba(255,255,255,.17);box-shadow:none}
+.chip[aria-pressed=true],.sheetTabs .chip[aria-pressed=true]{color:var(--pearl);font-weight:600}
+.btn{background:rgba(255,255,255,.075);border:0;box-shadow:none;color:var(--pearl)}
+.btn:hover{background:rgba(255,255,255,.13);border:0;box-shadow:none;color:var(--pearl)}
+.btn.ghost{background:transparent}
+.btn.ghost:hover{background:rgba(255,255,255,.09)}
+.btn.danger{color:var(--warn);background:rgba(255,140,170,.10)}
+.controls .btn,.skyDock .btn{background:transparent}
+.controls .btn:hover,.skyDock .btn:hover{background:rgba(255,255,255,.10)}
+.btn::after,.chip::after,.tab::after,.dock button::after{background:radial-gradient(130px circle at var(--mx,50%) var(--my,-30%),rgba(235,232,255,.16),rgba(235,232,255,.04) 40%,transparent 70%)}
+.btn.primary{color:#fff;background:var(--warm);box-shadow:0 6px 22px rgba(92,72,242,.32)}
+.btn.primary:hover{color:#fff;filter:brightness(1.08);box-shadow:0 8px 26px rgba(110,90,255,.42)}
+.lensBtn,.dock .fab.lensBtn{color:#fff;background:radial-gradient(circle at 34% 28%,#A493FF 0%,#7363FF 42%,#5243E6 78%,#4A35D2 100%);box-shadow:0 10px 30px rgba(92,72,242,.45)}
+.lensBtn:hover{box-shadow:0 12px 34px rgba(112,92,255,.55)}
+.lensBtn::before{border:1px solid rgba(255,255,255,.22)}
+.lensBtn::after{background:radial-gradient(70px circle at var(--mx,40%) var(--my,30%),rgba(255,255,255,.30),rgba(255,255,255,.06) 45%,transparent 70%)}
+.searchShell{background:rgba(255,255,255,.07);border:0;color:var(--muted)}
+.searchShell:focus-within{background:rgba(255,255,255,.11)}
+.searchShell kbd{border-color:rgba(255,255,255,.14)}
+.badge{border:0}
+.badge.demo{color:var(--pearl);background:rgba(255,255,255,.11)}
+.badge.mine{color:#EEEAFF;background:rgba(123,92,255,.34)}
+.badge.temp{color:var(--warn);background:rgba(255,140,170,.14)}
+.row{border-top-color:rgba(255,255,255,.05)}
+.row:hover{background:rgba(255,255,255,.05)}
+.row[aria-current=true]{background:rgba(255,255,255,.085);box-shadow:none}
+.row .dot.mine{background:#9C8BFF;box-shadow:0 0 6px rgba(156,139,255,.6)}
+.row .dot.demo{border-color:#CFC8FF;box-shadow:none}
+.row img,.peek img{box-shadow:none}
+.tile{background:rgba(255,255,255,.05);border:0;box-shadow:none}
+@media (hover:hover) and (pointer:fine){
+  .tile:hover{border:0;box-shadow:0 14px 32px rgba(8,6,40,.32);background:rgba(255,255,255,.08)}
+  .tile:hover img{filter:none}
+  .detailCard:hover{box-shadow:0 16px 44px rgba(8,6,40,.26)}
+}
+.tile:focus-visible{box-shadow:0 0 0 2px #C9C2FF,0 14px 32px rgba(8,6,40,.32)}
+.photo{box-shadow:none}
+.photo::after{display:none}
+.photoTag{background:rgba(14,12,48,.55);border:0}
+.flyer{background-color:#1A1A5A;box-shadow:0 12px 34px rgba(10,8,50,.4)}
+.drop{background:rgba(255,255,255,.04);border-color:rgba(205,200,255,.22);box-shadow:none}
+.field input,.field textarea,.field select{background:rgba(10,10,44,.55);border:1px solid rgba(205,200,255,.14);box-shadow:none}
+.convert{background:rgba(255,255,255,.06);box-shadow:none;border:0}
+.demoNote{background:rgba(255,255,255,.07);border:0;color:var(--dim)}
+.meter{background:rgba(255,255,255,.08)}
+.meter i{background:linear-gradient(90deg,#2A3BD9,#5B4BF2 55%,#8A63FF)}
+.switch input{accent-color:#7B5CFF}
+.section{border-top-color:rgba(255,255,255,.07)}
+:focus-visible{outline-color:#C9C2FF}
+.today{border-left-color:rgba(205,200,255,.18)}
+.legend i{box-shadow:none}
+.skyEmpty b{color:var(--pearl)}
+.sheetHandle::before{background:rgba(255,255,255,.35)}
+@media (max-width:900px){
+  .stage,.sky{border-radius:0;overflow:hidden}
+  .side{background:linear-gradient(170deg,rgba(40,42,138,.80),rgba(30,24,100,.86) 55%,rgba(48,30,110,.86));border:0;box-shadow:0 -12px 40px rgba(6,4,30,.3)}
+  .dock{background:var(--tint);border:0;box-shadow:0 12px 36px rgba(6,4,30,.35)}
+  .archive{background:transparent}
+}
+
+/* ===================== v7 · midnight navy, lagoon gradients, mint accent ===================== */
+:root{--bg:#060C1F;--deep:#0B1A3A;--ink:#F2FBFA;--pearl:#F2FBFA;--dim:#C6DCE2;--muted:#8DA9B4;
+  --mint:#2FE6C0;--mint2:#5CF5D4;--aqua:#19C3D8;--lagoon:#0E8FB0;--gold:#A8F4E3;--champ:#A8F4E3;--violet:#2FE6C0;
+  --serif:"PingFang SC","HarmonyOS Sans SC","MiSans","Source Han Sans SC","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;
+  --sans:"PingFang SC","HarmonyOS Sans SC","MiSans","Source Han Sans SC","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;
+  --warm:linear-gradient(135deg,#6AF7D9 0%,#2FE6C0 48%,#1CCBD3 100%);
+  --tint:linear-gradient(160deg,rgba(40,170,205,.15),rgba(18,86,140,.20) 55%,rgba(30,140,175,.15));
+  --tintL:linear-gradient(165deg,rgba(20,70,112,.50),rgba(11,40,82,.58) 55%,rgba(15,60,98,.54));
+  --glass:var(--tint);--glassL:var(--tintL)}
+body{font-weight:300;letter-spacing:.01em;background:
+  radial-gradient(60% 55% at 4% -6%,rgba(0,182,214,.50),transparent 72%),
+  radial-gradient(55% 50% at 96% 4%,rgba(36,222,196,.30),transparent 74%),
+  radial-gradient(75% 62% at 50% 55%,rgba(0,118,172,.32),transparent 76%),
+  radial-gradient(60% 52% at 10% 100%,rgba(8,150,172,.34),transparent 74%),
+  radial-gradient(58% 48% at 96% 96%,rgba(18,92,204,.32),transparent 72%),
+  linear-gradient(180deg,#081634 0%,#071229 46%,#060C1F 100%);background-attachment:fixed;background-color:#060C1F}
+header{background:linear-gradient(180deg,rgba(7,22,52,.64),rgba(7,22,52,0))}
+.head{height:74px}
+.brand b,.intro h1,dialog h2,.details h3,.yearHead,.cardHead h2,.corner b,.section h3,.lunarBig,.today strong,.skyEmpty b,.peek strong,.photoTag{font-family:var(--sans)}
+.brand b{font-weight:500;letter-spacing:.12em}
+.intro h1{font-weight:300;letter-spacing:.08em}
+.details h3,dialog h2{font-weight:400;letter-spacing:.04em}
+.cardHead h2,.yearHead,.section h3,.corner b{font-weight:500;letter-spacing:.08em}
+.lunarBig,.today strong{font-weight:400}
+.corner b,.today strong,.lunarBig,.cardHead h2,.yearHead,.section h3,.tile small,.peek small,.convert b{color:#8FF1DC}
+strong,.row strong,.tile strong{font-weight:500}
+main{padding-top:28px}
+.intro{margin-bottom:24px}
+.layout{gap:24px}
+.side,.sheetBody{gap:18px}
+.cardHead{padding:16px 20px}
+.details{padding:18px 20px 22px}
+.rows{padding:0 12px 10px}
+.row{padding:12px 8px;border-radius:16px;border-top-color:rgba(255,255,255,.04)}
+.row img{border-radius:12px}
+.card,.archive{border-radius:26px}
+.archive{padding:22px}
+.grid{gap:16px}
+.tile{border-radius:22px}
+.sky{background:radial-gradient(62% 58% at 50% 50%,rgba(0,170,204,.24),transparent 76%),radial-gradient(46% 42% at 28% 28%,rgba(47,230,192,.14),transparent 72%),radial-gradient(46% 42% at 74% 72%,rgba(24,118,222,.18),transparent 74%)}
+.aurora i:nth-child(1){background:radial-gradient(closest-side,rgba(0,192,216,.55),transparent)}
+.aurora i:nth-child(2){background:radial-gradient(closest-side,rgba(47,230,192,.32),transparent)}
+.aurora i:nth-child(3){background:radial-gradient(closest-side,rgba(14,120,204,.48),transparent)}
+.aurora i:nth-child(4){background:radial-gradient(closest-side,rgba(120,255,230,.15),transparent)}
+.btn{border-radius:999px;background:rgba(255,255,255,.08);padding:9px 18px;font-weight:400}
+.btn:hover{background:rgba(255,255,255,.13)}
+.btn.icon{border-radius:50%;padding:0}
+.btn.sm{padding:6px 14px}
+.btn.primary{color:#04212A;background:var(--warm);font-weight:500;box-shadow:0 6px 22px rgba(47,230,192,.26)}
+.btn.primary:hover{color:#04212A;filter:brightness(1.05);box-shadow:0 8px 26px rgba(47,230,192,.36)}
+.btn.danger{color:#FFB3C1;background:rgba(255,120,150,.10)}
+.lensBtn,.dock .fab.lensBtn{color:#04212A;background:radial-gradient(circle at 34% 28%,#B4FFEF 0%,#64F6D7 38%,#2FE6C0 70%,#13BDB0 100%);box-shadow:0 10px 30px rgba(47,230,192,.36)}
+.lensBtn:hover{box-shadow:0 12px 34px rgba(47,230,192,.48)}
+.lensBtn::before{border-color:rgba(255,255,255,.4)}
+.chipLens,.sheetTabs>.lens{background:var(--warm);box-shadow:0 4px 14px rgba(47,230,192,.22)}
+.chip[aria-pressed=true],.sheetTabs .chip[aria-pressed=true]{color:#04212A;font-weight:500}
+.navLens{background:rgba(47,230,192,.15)}
+.tab[aria-current=page]{color:#7FF5DD;font-weight:500}
+.seg{border-radius:999px;border-color:rgba(255,255,255,.1)}
+.seg>.lens{background:rgba(47,230,192,.22);border-radius:999px}
+.seg button[aria-pressed=true]{color:#7FF5DD}
+.controls{border-radius:999px}
+.legend{border-radius:22px;padding:10px 16px}
+.skyDock{padding:9px 12px}
+.searchShell{border-radius:999px;background:rgba(255,255,255,.08);padding:0 16px}
+.searchShell:focus-within{background:rgba(255,255,255,.12);box-shadow:0 0 0 1px rgba(47,230,192,.35)}
+.badge{border-radius:999px;padding:5px 10px}
+.badge.mine{color:#8FF1DC;background:rgba(47,230,192,.16)}
+.badge.demo{color:var(--pearl);background:rgba(255,255,255,.10)}
+.row:hover{background:rgba(255,255,255,.05)}
+.row[aria-current=true]{background:rgba(47,230,192,.10)}
+.row .dot.mine{background:var(--mint);box-shadow:0 0 6px rgba(47,230,192,.6)}
+.row .dot.demo{border-color:#8FF1DC}
+.drop{border-radius:22px;border-color:rgba(47,230,192,.28)}
+.field input,.field textarea,.field select{border-radius:16px;border-color:rgba(160,230,240,.14);background:rgba(4,16,40,.55)}
+.convert{border-radius:16px}
+dialog{border-radius:28px;background:linear-gradient(165deg,#0D2A4C 0%,#0A1E3D 55%,#0C2747 100%)}
+.peek{border-radius:20px}
+.peek img{border-radius:12px}
+.photoTag{font-weight:400}
+.meter i{background:linear-gradient(90deg,#0E8FB0,#19C3D8 50%,#5CF5D4)}
+.switch input{accent-color:#2FE6C0}
+:focus-visible{outline-color:#5CF5D4}
+.today{border-left-color:rgba(47,230,192,.25)}
+.tile:focus-visible{box-shadow:0 0 0 2px #5CF5D4,0 14px 32px rgba(4,10,30,.32)}
+.flyer{background-color:#0B2A44;box-shadow:0 12px 34px rgba(4,20,40,.4)}
+.skyEmpty{border-radius:28px;padding:26px 28px;width:min(400px,86%)}
+.demoNote,.hint{border-radius:14px}
+@media (max-width:900px){
+  .head{height:60px}
+  .side{border-radius:28px 28px 0 0;background:linear-gradient(170deg,rgba(18,72,116,.84),rgba(10,40,82,.9) 55%,rgba(14,58,96,.9))}
+  .dock{border-radius:999px;background:var(--tint)}
+  .sky{height:calc(100dvh - 60px - env(safe-area-inset-top))}
+  .searchShell{top:calc(66px + env(safe-area-inset-top))}
+  main{padding-top:0}
+  .archive{padding:16px 14px}
+  .tile strong{flex-direction:column;align-items:flex-start;gap:6px}
+  .tile strong span{white-space:normal;overflow:visible}
+}
+
+/* ===================== v8 · 二十八宿 deep-space backdrop ===================== */
+#backdrop{pointer-events:none;cursor:default;z-index:1;-webkit-mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 80%,transparent 100%);mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 80%,transparent 100%)}
+#space{z-index:2}
+.sky{background:radial-gradient(50% 50% at 50% 50%,rgba(3,8,22,.74),rgba(3,8,22,.38) 62%,transparent 100%),radial-gradient(46% 42% at 26% 26%,rgba(0,150,190,.14),transparent 72%),radial-gradient(46% 42% at 76% 74%,rgba(24,100,200,.14),transparent 74%)}
+.aurora{opacity:.42}
+
+/* ===================== v9 · neutral black / charcoal / graphite glass ===================== */
+:root{--bg:#07080A;--deep:#141518;--ink:#F3F4F6;--pearl:#F3F4F6;--dim:#C9CCD2;--muted:#8E929A;
+  --jade:#4FC28F;--silver:#D7DCE4;--cinnabar:#E2543F;--amethyst:#A070E0;--coral:#E2543F;--lilac:#A070E0;--mint:#F3F4F6;
+  --gold:#D7DCE4;--champ:#D7DCE4;--warn:#F08A7C;
+  --warm:linear-gradient(135deg,#F6F7F9 0%,#DCDFE4 55%,#C4C8CF 100%);
+  --tint:linear-gradient(160deg,rgba(64,66,72,.40),rgba(36,37,41,.48) 55%,rgba(48,49,54,.42));
+  --tintL:linear-gradient(165deg,rgba(44,45,50,.66),rgba(26,27,30,.74) 55%,rgba(34,35,39,.70));
+  --glass:var(--tint);--glassL:var(--tintL);--line:rgba(255,255,255,.07);--edge:rgba(255,255,255,.06)}
+body{background:
+  radial-gradient(60% 50% at 8% -6%,rgba(70,72,78,.40),transparent 72%),
+  radial-gradient(55% 48% at 94% 4%,rgba(56,57,62,.34),transparent 74%),
+  radial-gradient(70% 60% at 50% 60%,rgba(30,31,34,.55),transparent 78%),
+  linear-gradient(180deg,#121316 0%,#0B0C0E 48%,#060708 100%);background-attachment:fixed;background-color:#060708}
+header{background:linear-gradient(180deg,rgba(18,19,22,.72),rgba(18,19,22,0))}
+.sky{background:radial-gradient(50% 50% at 50% 50%,rgba(2,2,3,.70),rgba(2,2,3,.34) 62%,transparent 100%),radial-gradient(46% 42% at 26% 26%,rgba(80,82,88,.10),transparent 72%),radial-gradient(46% 42% at 76% 74%,rgba(60,62,68,.10),transparent 74%)}
+.aurora{opacity:.18}
+.aurora i:nth-child(1),.aurora i:nth-child(2),.aurora i:nth-child(3),.aurora i:nth-child(4){background:radial-gradient(closest-side,rgba(120,124,132,.35),transparent)}
+.corner b,.today strong,.lunarBig,.cardHead h2,.yearHead,.section h3,.tile small,.peek small,.convert b{color:#DADDE3}
+.brand b,.intro h1,.details h3{color:var(--pearl)}
+.btn{background:rgba(255,255,255,.075);color:var(--pearl)}
+.btn:hover{background:rgba(255,255,255,.13)}
+.btn.primary,.btn.primary:hover{color:#121316;background:var(--warm);box-shadow:0 6px 20px rgba(0,0,0,.35)}
+.btn.danger{color:var(--warn);background:rgba(226,84,63,.12)}
+.lensBtn,.dock .fab.lensBtn{color:#121316;background:radial-gradient(circle at 34% 28%,#FFFFFF 0%,#EDEFF2 40%,#CDD1D8 75%,#A9AEB7 100%);box-shadow:0 10px 28px rgba(0,0,0,.5)}
+.lensBtn:hover{box-shadow:0 12px 32px rgba(0,0,0,.55),0 0 24px rgba(255,255,255,.12)}
+.lensBtn::before{border-color:rgba(255,255,255,.55)}
+.chipLens,.sheetTabs>.lens{background:var(--warm);box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.chip[aria-pressed=true],.sheetTabs .chip[aria-pressed=true]{color:#121316}
+.navLens{background:rgba(255,255,255,.12)}
+.tab[aria-current=page]{color:var(--pearl)}
+.seg>.lens{background:rgba(255,255,255,.14)}
+.seg button[aria-pressed=true]{color:var(--pearl)}
+.searchShell{background:rgba(255,255,255,.07)}
+.searchShell:focus-within{background:rgba(255,255,255,.11);box-shadow:0 0 0 1px rgba(255,255,255,.18)}
+.badge.mine{color:#E6E8EC;background:rgba(255,255,255,.12)}
+.badge.demo{color:var(--dim);background:rgba(255,255,255,.08)}
+.row[aria-current=true]{background:rgba(255,255,255,.08)}
+.row .dot.mine{background:#E6E8EC;box-shadow:0 0 6px rgba(255,255,255,.4)}
+.row .dot.demo{border-color:#A9AEB7}
+.drop{border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.03)}
+.field input,.field textarea,.field select{background:rgba(8,8,10,.6);border-color:rgba(255,255,255,.10)}
+.convert{background:rgba(255,255,255,.05)}
+dialog{background:linear-gradient(165deg,#24252A 0%,#1A1B1E 55%,#202125 100%)}
+.meter i{background:linear-gradient(90deg,#6E737C,#C4C8CF 60%,#F3F4F6)}
+.switch input{accent-color:#D7DCE4}
+:focus-visible{outline-color:#E6E8EC}
+.today{border-left-color:rgba(255,255,255,.14)}
+.tile:focus-visible{box-shadow:0 0 0 2px #E6E8EC,0 14px 32px rgba(0,0,0,.4)}
+.flyer{background-color:#26272B;box-shadow:0 12px 34px rgba(0,0,0,.5)}
+.photoTag{background:rgba(10,10,12,.6)}
+.skyEmpty b{color:var(--pearl)}
+.card,.archive{box-shadow:0 10px 40px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(5,5,7,.62)}
+@media (max-width:900px){
+  .side{background:linear-gradient(170deg,rgba(44,45,50,.9),rgba(26,27,30,.94) 55%,rgba(34,35,39,.94))}
+  .dock{background:var(--tint)}
+  .archive{background:transparent}
+}
+
+/* ===================== v12 · one shared sky behind Liquid Glass ===================== */
+:root{--lgTint:linear-gradient(162deg,rgba(40,41,46,.36),rgba(22,23,27,.44) 52%,rgba(30,31,35,.40));
+  --lgTintS:linear-gradient(170deg,rgba(38,39,44,.42),rgba(20,21,24,.50) 55%,rgba(28,29,33,.46));
+  --lgBlur:blur(14px) saturate(1.3);--lgBlurS:blur(12px) saturate(1.25);
+  --lgRefl:radial-gradient(70% 90% at 0% 0%,rgba(79,194,143,.11),rgba(79,194,143,.04) 38%,transparent 66%),
+    radial-gradient(60% 80% at 100% 0%,rgba(215,220,228,.11),rgba(215,220,228,.035) 40%,transparent 68%),
+    radial-gradient(65% 90% at 100% 100%,rgba(226,84,63,.085),rgba(226,84,63,.03) 40%,transparent 68%),
+    radial-gradient(65% 90% at 0% 100%,rgba(160,112,224,.10),rgba(160,112,224,.035) 40%,transparent 68%);
+  --lgShade:0 14px 40px rgba(0,0,0,.30),0 2px 8px rgba(0,0,0,.18);
+  --scrim:0 1px 2px rgba(0,0,0,.5),0 0 16px rgba(0,0,0,.38)}
+html,body{background:
+  radial-gradient(70% 55% at 50% 42%,#17181b 0%,#121315 38%,#0d0e10 66%,#0a0b0c 100%) fixed,#0a0b0c}
+/* the sky is one fixed layer under every surface */
+#backdrop,#skyfx{position:fixed!important;left:0;top:0;width:100vw!important;height:100vh!important;z-index:0;pointer-events:none;
+  -webkit-mask-image:radial-gradient(135% 120% at 50% 46%,#000 0%,#000 46%,rgba(0,0,0,.82) 62%,rgba(0,0,0,.5) 78%,rgba(0,0,0,.22) 92%,transparent 108%);
+          mask-image:radial-gradient(135% 120% at 50% 46%,#000 0%,#000 46%,rgba(0,0,0,.82) 62%,rgba(0,0,0,.5) 78%,rgba(0,0,0,.22) 92%,transparent 108%)}
+main{position:relative;z-index:1}
+#skyfx{cursor:default}
+.stage,.sky{background:none!important;border:0!important;box-shadow:none!important}
+.sky::after{display:none!important}
+#space{-webkit-mask-image:linear-gradient(90deg,transparent 0,rgba(0,0,0,.35) 10px,rgba(0,0,0,.8) 24px,#000 40px,#000 calc(100% - 40px),rgba(0,0,0,.8) calc(100% - 24px),rgba(0,0,0,.35) calc(100% - 10px),transparent 100%),linear-gradient(180deg,transparent 0,rgba(0,0,0,.35) 10px,rgba(0,0,0,.8) 24px,#000 40px,#000 calc(100% - 40px),rgba(0,0,0,.8) calc(100% - 24px),rgba(0,0,0,.35) calc(100% - 10px),transparent 100%);
+  -webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent 0,rgba(0,0,0,.35) 10px,rgba(0,0,0,.8) 24px,#000 40px,#000 calc(100% - 40px),rgba(0,0,0,.8) calc(100% - 24px),rgba(0,0,0,.35) calc(100% - 10px),transparent 100%),linear-gradient(180deg,transparent 0,rgba(0,0,0,.35) 10px,rgba(0,0,0,.8) 24px,#000 40px,#000 calc(100% - 40px),rgba(0,0,0,.8) calc(100% - 24px),rgba(0,0,0,.35) calc(100% - 10px),transparent 100%);mask-composite:intersect}
+/* Liquid Glass surfaces */
+header{z-index:20;background:linear-gradient(180deg,rgba(26,27,31,.42),rgba(20,21,24,.30) 60%,rgba(20,21,24,.12))!important;
+  -webkit-backdrop-filter:var(--lgBlur)!important;backdrop-filter:var(--lgBlur)!important;border:0!important;box-shadow:none!important;padding-bottom:16px;margin-bottom:-16px;
+  -webkit-mask-image:linear-gradient(180deg,#000 0,#000 66%,rgba(0,0,0,.72) 80%,rgba(0,0,0,.3) 92%,transparent 100%);
+          mask-image:linear-gradient(180deg,#000 0,#000 66%,rgba(0,0,0,.72) 80%,rgba(0,0,0,.3) 92%,transparent 100%)}
+header::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:-1;background:
+  radial-gradient(40% 140% at 8% 0%,rgba(79,194,143,.10),transparent 70%),radial-gradient(34% 140% at 62% 0%,rgba(215,220,228,.07),transparent 70%),
+  radial-gradient(30% 140% at 96% 0%,rgba(160,112,224,.09),transparent 70%),linear-gradient(180deg,rgba(255,255,255,.07),transparent 3px)}
+header{isolation:isolate}
+.controls,.legend,.skyDock,.dock,.peek,.skyEmpty,.results,.toast,.modeSwitch{background:var(--lgTint)!important;-webkit-backdrop-filter:var(--lgBlur)!important;backdrop-filter:var(--lgBlur)!important;box-shadow:var(--lgShade)!important;isolation:isolate}
+.card,.archive{background:var(--lgTint)!important;-webkit-backdrop-filter:var(--lgBlur)!important;backdrop-filter:var(--lgBlur)!important;box-shadow:var(--lgShade)!important;border:0!important;isolation:isolate}
+.controls::before,.legend::before,.skyDock::before,.dock::before,.peek::before,.skyEmpty::before,.card::before,.archive::before,.side::before,.results::before{
+  content:"";display:block!important;position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;padding:0;background:var(--lgRefl);
+  -webkit-mask:none;mask:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.13),inset 0 -1px 0 rgba(255,255,255,.035)}
+.controls::after,.legend::after,.skyDock::after,.dock::after,.peek::after,.skyEmpty::after,.card::after,.archive::after,.side::after,.results::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;z-index:3;
+  background:conic-gradient(from 215deg at 50% 50%,rgba(255,255,255,.34),rgba(215,220,228,.10) 14%,rgba(255,255,255,.02) 30%,rgba(160,112,224,.10) 44%,rgba(255,255,255,.03) 56%,rgba(226,84,63,.10) 66%,rgba(255,255,255,.04) 78%,rgba(79,194,143,.16) 90%,rgba(255,255,255,.34));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+.legend,.peek,.skyEmpty,.results{position:absolute}
+.toast{position:fixed}
+.controls,.legend,.skyDock,.dock,.side,.card,.archive,header,.peek,.skyEmpty{text-shadow:var(--scrim)}
+.lensBtn,.lensBtn *{text-shadow:none}
+/* localized scrim behind dense text instead of opaque cards */
+.details,.cardHead,.legend span,.list .row{background-image:radial-gradient(120% 140% at 30% 50%,rgba(8,9,11,.26),rgba(8,9,11,.10) 60%,transparent 100%)}
+.intro h1,.intro p,.today{text-shadow:0 1px 2px rgba(0,0,0,.6),0 0 22px rgba(0,0,0,.55)}
+@media (min-width:901px){ .side{background:none!important;box-shadow:none!important} .side::before,.side::after{display:none!important} }
+@media (max-width:900px){
+  .side{background:var(--lgTintS)!important;-webkit-backdrop-filter:var(--lgBlurS)!important;backdrop-filter:var(--lgBlurS)!important;border:0!important;box-shadow:0 -14px 44px rgba(0,0,0,.34)!important;isolation:isolate}
+  .side .card,.side .archive{background:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:none!important}
+  .side .card::before,.side .card::after,.side .archive::before,.side .archive::after{display:none!important}
+  .dock{background:linear-gradient(162deg,rgba(40,41,46,.34),rgba(20,21,24,.42))!important}
+  header{background:linear-gradient(180deg,rgba(24,25,29,.40),rgba(20,21,24,.22) 60%,rgba(20,21,24,.06))!important}
+}
+.results{background:var(--lgTintS)!important}
+.calm .card,.calm .archive{transition:none}
+
+/* ===================== v13 · button motion: ripple light, spring press, sheen, icon gestures ===================== */
+button{-webkit-tap-highlight-color:transparent}
+button:not(:disabled){transition:scale .5s cubic-bezier(.34,1.56,.64,1),filter .3s ease,background-color .3s ease,box-shadow .35s ease,color .25s ease,opacity .25s ease}
+button:not(:disabled):active{scale:.975;transition-duration:.09s}
+.fxw{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none;z-index:2}
+.fxw::before{content:"";position:absolute;inset:-40% -60%;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.0) 42%,rgba(236,239,244,.16) 50%,rgba(255,255,255,0) 58%,transparent 62%);transform:translateX(-70%);opacity:0}
+button.fxh .fxw::before{animation:fxSheen .9s cubic-bezier(.3,.7,.2,1) 1}
+@keyframes fxSheen{0%{transform:translateX(-70%);opacity:0}15%{opacity:1}100%{transform:translateX(70%);opacity:0}}
+.rpl{position:absolute;left:var(--x);top:var(--y);width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(240,242,246,.42) 0%,rgba(var(--rc,215,220,228),.2) 38%,rgba(var(--rc,215,220,228),.06) 58%,transparent 72%);
+  transform:scale(0);animation:fxRipple .75s cubic-bezier(.16,.84,.3,1) forwards}
+@keyframes fxRipple{60%{opacity:1}to{transform:scale(var(--s,14));opacity:0}}
+.fxRing{position:absolute;inset:-1px;border-radius:inherit;pointer-events:none;border:1.5px solid rgba(var(--rc,215,220,228),.55);animation:fxRing .7s cubic-bezier(.2,.8,.2,1) forwards;z-index:3}
+@keyframes fxRing{from{opacity:.9;transform:scale(1)}to{opacity:0;transform:scale(1.45)}}
+button:focus-visible{animation:fxFocus 1.4s ease-out 1}
+@keyframes fxFocus{0%{box-shadow:0 0 0 0 rgba(215,220,228,.5)}40%{box-shadow:0 0 0 5px rgba(215,220,228,.16)}100%{box-shadow:0 0 0 2px rgba(215,220,228,.28)}}
+/* gestures, on the icon when there is one, else the whole control */
+.fx-pop{animation:fxPop .52s cubic-bezier(.34,1.56,.64,1)}
+@keyframes fxPop{0%{scale:1}30%{scale:.92}65%{scale:1.05}100%{scale:1}}
+.fx-spin svg{animation:fxSpin .8s cubic-bezier(.65,0,.25,1)}
+@keyframes fxSpin{from{rotate:0deg}to{rotate:-360deg}}
+.fx-zin svg{animation:fxZin .55s cubic-bezier(.34,1.56,.64,1)}
+@keyframes fxZin{0%{scale:1}35%{scale:1.32}100%{scale:1}}
+.fx-zout svg{animation:fxZout .55s cubic-bezier(.34,1.56,.64,1)}
+@keyframes fxZout{0%{scale:1}35%{scale:.68}100%{scale:1}}
+.fx-bloom svg{animation:fxBloom .75s cubic-bezier(.34,1.56,.64,1)}
+@keyframes fxBloom{0%{rotate:0deg;scale:1}40%{rotate:90deg;scale:1.22}100%{rotate:90deg;scale:1}}
+.fx-bloom{animation:fxGlow .9s ease-out}
+@keyframes fxGlow{0%{filter:brightness(1)}30%{filter:brightness(1.35) saturate(1.2)}100%{filter:brightness(1)}}
+.fx-twist svg{animation:fxTwist .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes fxTwist{0%{rotate:0deg;scale:1}50%{rotate:90deg;scale:.8}100%{rotate:90deg;scale:1}}
+.fx-wobble svg{animation:fxWobble .7s cubic-bezier(.36,.07,.19,.97)}
+@keyframes fxWobble{0%,100%{rotate:0deg}20%{rotate:-16deg}45%{rotate:12deg}70%{rotate:-6deg}}
+.fx-dice svg{animation:fxDice .75s cubic-bezier(.34,1.3,.64,1)}
+@keyframes fxDice{0%{rotate:0deg;translate:0 0}30%{rotate:120deg;translate:0 -3px}60%{rotate:200deg;translate:0 1px}100%{rotate:180deg;translate:0 0}}
+.fx-gear svg{animation:fxGear .8s cubic-bezier(.34,1.4,.64,1)}
+@keyframes fxGear{to{rotate:120deg}}
+.fx-drop svg{animation:fxDrop .65s cubic-bezier(.34,1.56,.64,1)}
+@keyframes fxDrop{0%{translate:0 0}35%{translate:0 4px;opacity:.6}36%{translate:0 -5px;opacity:0}100%{translate:0 0;opacity:1}}
+.fx-rise svg{animation:fxRise .65s cubic-bezier(.34,1.56,.64,1)}
+@keyframes fxRise{0%{translate:0 0}35%{translate:0 -4px;opacity:.6}36%{translate:0 5px;opacity:0}100%{translate:0 0;opacity:1}}
+.fx-flash{animation:fxFlash .6s ease-out}
+@keyframes fxFlash{0%{filter:brightness(1)}12%{filter:brightness(1.9)}100%{filter:brightness(1)}}
+.fx-shake{animation:fxShake .5s cubic-bezier(.36,.07,.19,.97)}
+@keyframes fxShake{10%,90%{translate:-1px 0}20%,80%{translate:2px 0}30%,50%,70%{translate:-3px 0}40%,60%{translate:3px 0}}
+.fx-check{animation:fxPop .6s cubic-bezier(.34,1.56,.64,1),fxGlow .9s ease-out}
+.fx-slide{animation:fxSlide .45s cubic-bezier(.34,1.56,.64,1)}
+@keyframes fxSlide{0%{translate:0 0}40%{translate:0 -2px}100%{translate:0 0}}
+.fx-stretch{animation:fxStretch .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes fxStretch{0%{scale:1 1}40%{scale:1.25 .8}100%{scale:1 1}}
+button svg{transform-origin:50% 50%;transform-box:fill-box}
+button:not(:disabled):hover svg{filter:drop-shadow(0 0 4px rgba(var(--rc,215,220,228),.35))}
+/* calm: keep feedback, drop motion */
+.calm button,.calm button:active{transition:background-color .2s,opacity .2s!important;scale:none!important}
+.calm .rpl,.calm .fxRing,.calm .fxw::before{display:none!important}
+.calm [class*="fx-"],.calm [class*="fx-"] svg{animation:none!important}
+@media (prefers-reduced-motion:reduce){button,button:active{scale:none!important}.rpl,.fxRing,.fxw::before{display:none!important}[class*="fx-"],[class*="fx-"] svg{animation:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></symbol>
+  <symbol id="i-data" viewBox="0 0 24 24"><ellipse cx="12" cy="6.5" rx="7" ry="3"/><path d="M5 6.5v5c0 1.66 3.13 3 7 3s7-1.34 7-3v-5"/><path d="M5 11.5v5c0 1.66 3.13 3 7 3s7-1.34 7-3v-5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5.5v13M5.5 12h13"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5.5 12h13"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="1.6"/><path d="M12 2.75v2.5M12 18.75v2.5M2.75 12h2.5M18.75 12h2.5"/></symbol>
+  <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M11 3.5c.65 4.4 2.3 6.05 6.7 6.7-4.4.65-6.05 2.3-6.7 6.7-.65-4.4-2.3-6.05-6.7-6.7 4.4-.65 6.05-2.3 6.7-6.7Z"/><path d="M18.25 15.5c.25 1.45.8 2 2.25 2.25-1.45.25-2 .8-2.25 2.25-.25-1.45-.8-2-2.25-2.25 1.45-.25 2-.8 2.25-2.25Z"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="6.5" height="6.5" rx="2"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="2"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="2"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="2"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 7h11M9 12h11M9 17h11M4.5 7h.01M4.5 12h.01M4.5 17h.01"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 9a2.5 2.5 0 0 1 2.5-2.5h1.2l1.4-2h5.8l1.4 2h1.2A2.5 2.5 0 0 1 20 9v7.5a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5Z"/><circle cx="12" cy="12.75" r="3.25"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="3"/><path d="m4.5 16.5 4-4 3.5 3.5 2.5-2.5 4.5 4.5"/><circle cx="15.5" cy="9.5" r="1.5"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M7 7l10 10M17 7 7 17"/></symbol>
+</svg>
+<header>
+  <div class="head">
+    <a class="brand" href="#atlas" aria-label="星藏 Lunar Atlas 首页">
+      <svg viewBox="0 0 62 68" aria-hidden="true"><g fill="none" stroke="#D7DCE4" stroke-width="1.6"><circle cx="31" cy="34" r="23"/><ellipse cx="31" cy="34" rx="23" ry="12" transform="rotate(-31 31 34)" stroke="#8E929A" opacity=".8"/></g><path fill="#F3F4F6" d="M31 16c1.35 11.18 3.82 15.12 14 18-10.18 2.88-12.65 6.82-14 18-1.35-11.18-3.82-15.12-14-18 10.18-2.88 12.65-6.82 14-18Z"/><circle cx="47" cy="24" r="2.6" fill="#4FC28F"/></svg>
+      <b>星藏</b><small>LUNAR ATLAS</small>
+    </a>
+    <nav class="lensGroup" data-lens-h="40" aria-label="主导航"><span class="lens navLens" aria-hidden="true"></span><button class="tab" id="atlasTab" aria-current="page">星图</button><button class="tab" id="archiveTab">记忆集</button></nav>
+    <div class="headActions">
+      <div class="searchShell" role="search">
+        <svg class="i" aria-hidden="true"><use href="#i-search"/></svg>
+        <input id="search" type="search" aria-label="查找回忆" placeholder="标题、农历、公历、天区…" autocomplete="off" aria-controls="results" aria-expanded="false">
+        <kbd aria-hidden="true">/</kbd>
+        <div class="results rim" id="results" role="listbox" aria-label="查找结果" hidden></div>
+      </div>
+      <button class="btn" id="dataOpen" title="数据与设置"><svg class="i" aria-hidden="true"><use href="#i-data"/></svg>数据</button>
+      <button class="btn primary" id="newBtn"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>收藏一刻</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="intro" id="intro">
+    <div><h1 id="pageTitle">我的星图</h1><p id="subhead">一段回忆，一颗星：星星均匀散布在天球上，四象神兽的发光剪影与二十八宿星线随星图一起转动。</p></div>
+    <div class="today"><small>今日</small><strong id="todayLunar"></strong><span id="todaySolar"></span></div>
+  </section>
+
+  <div class="layout" id="atlas">
+    <section class="stage" aria-label="三维记忆星图">
+      <div class="sky" id="sky">
+        <div class="aurora" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        <canvas id="backdrop" aria-hidden="true" tabindex="-1"></canvas>
+        <canvas id="skyfx" aria-hidden="true" tabindex="-1"></canvas>
+        <canvas id="space" tabindex="0" role="application" aria-roledescription="三维星图" aria-describedby="skyHelp"></canvas>
+        <p id="skyHelp" class="sr">方向键旋转星图，加号减号缩放，0 复位；左右方括号切换星星，回车查看详情。</p>
+        <div class="corner"><b id="skyTitle">我的星图</b><span id="skySub">一段回忆，一颗星</span></div>
+        <div class="filters lensGroup modeSwitch glass rim" role="group" aria-label="切换星图"><span class="lens chipLens" aria-hidden="true"></span><button class="chip" data-mode="mine">我的星图</button><button class="chip" data-mode="demo">示例星图</button></div>
+        <div class="controls glass rim" role="group" aria-label="星图视角">
+          <button class="btn icon" id="zoomIn" aria-label="放大" title="放大（+）"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></button>
+          <button class="btn icon" id="zoomOut" aria-label="缩小" title="缩小（−）"><svg class="i" aria-hidden="true"><use href="#i-minus"/></svg></button>
+          <button class="btn icon" id="resetView" aria-label="回到初始视角" title="复位（0）"><svg class="i" aria-hidden="true"><use href="#i-target"/></svg></button>
+        </div>
+        <div class="legend glass rim" aria-label="四象配色：神兽与二十八宿"><span><i style="background:#4fc28f"></i>春 · 青龙</span><span><i style="background:#e2543f"></i>夏 · 朱雀</span><span><i style="background:#d7dce4"></i>秋 · 白虎</span><span><i style="background:#a070e0"></i>冬 · 玄武</span><span class="keys">拖动旋转 · 滚轮缩放 · [ ] 切换</span></div>
+        <div class="peek glass rim" id="peek" aria-hidden="true"><img alt=""><div><strong></strong><small></small><em></em></div></div>
+        <div class="skyEmpty glass rim" id="skyEmpty" hidden><p><b>这片星空还空着。</b><br>收藏第一张照片，它会成为这里的第一颗星；之后每一段回忆都会多一颗。</p><div class="actions" style="justify-content:center"><button class="btn primary" data-new>收藏第一刻</button><button class="btn" data-mode-go="demo">看看示例星图</button></div></div>
+        <div class="skyDock glass rim" role="group" aria-label="星图操作">
+          <button class="btn" id="randomBtn"><svg class="i" aria-hidden="true"><use href="#i-sparkle"/></svg>随机寻星</button>
+          <button class="lensBtn" id="lensNew" data-new aria-label="收藏一刻" title="收藏一刻（N）"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></button>
+          <button class="btn" id="skyArchive"><svg class="i" aria-hidden="true"><use href="#i-grid"/></svg>记忆集</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="side" id="side" data-view="detail" aria-label="回忆详情与列表">
+      <button class="sheetHandle" id="sheetHandle" aria-label="下拉关闭面板"></button>
+      <div class="sheetTop" id="sheetTop">
+        <div class="sheetTabs lensGroup" role="group" aria-label="面板内容"><span class="lens" aria-hidden="true"></span><button class="chip" id="sheetDetail" aria-pressed="true">详情</button><button class="chip" id="sheetList" aria-pressed="false">全部回忆</button></div>
+        <button class="btn icon ghost sheetClose" id="sheetClose" aria-label="关闭面板"><svg class="i" aria-hidden="true"><use href="#i-close"/></svg></button>
+      </div>
+      <div class="sheetBody">
+        <section class="card rim detailCard" id="detail" aria-live="polite"></section>
+        <section class="card rim listCard">
+          <div class="cardHead"><h2>回忆列表</h2><span id="count" class="badge"></span></div>
+          <div class="filters lensGroup" role="group" aria-label="切换星图"><span class="lens chipLens" aria-hidden="true"></span><button class="chip" data-mode="mine">我的星图</button><button class="chip" data-mode="demo">示例星图</button></div>
+          <div class="rows" id="rows"></div>
+        </section>
+      </div>
+    </aside>
+  </div>
+
+  <section class="archive rim" id="archive" aria-label="记忆集" hidden>
+    <div class="filters lensGroup" role="group" aria-label="切换星图"><span class="lens chipLens" aria-hidden="true"></span><button class="chip" data-mode="mine">我的星图</button><button class="chip" data-mode="demo">示例星图</button></div>
+    <div id="archiveBody"></div>
+  </section>
+  <footer class="foot"><span>星图连线与坐标为记忆而设计的示意，并非真实天象。</span><button class="link" id="aboutLink">星图说明与快捷键</button></footer>
+</main>
+
+<nav class="dock" aria-label="快捷操作">
+  <button id="dockList" aria-pressed="false"><svg class="i" aria-hidden="true"><use href="#i-list"/></svg>回忆</button>
+  <button id="dockRandom"><svg class="i" aria-hidden="true"><use href="#i-sparkle"/></svg>寻星</button>
+  <button class="fab lensBtn" id="dockNew" aria-label="收藏一刻"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></button>
+  <button id="dockSearch" aria-pressed="false"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg>查找</button>
+  <button id="dockData"><svg class="i" aria-hidden="true"><use href="#i-data"/></svg>数据</button>
+</nav>
+
+<dialog id="formDialog" aria-labelledby="formTitle">
+  <form id="memoryForm" novalidate>
+    <div class="dHead"><h2 id="formTitle">收藏一刻</h2><button class="btn icon ghost" type="button" id="formClose" aria-label="关闭"><svg class="i" aria-hidden="true"><use href="#i-close"/></svg></button></div>
+    <div class="drop" id="drop">
+      <img id="photoPreview" class="preview" alt="待保存的照片预览" hidden>
+      <video id="video" class="preview" muted playsinline hidden></video>
+      <p id="dropText">拖入一张照片，或：</p>
+      <div class="row2">
+        <button class="btn" type="button" id="cameraBtn"><svg class="i" aria-hidden="true"><use href="#i-camera"/></svg>拍照</button>
+        <button class="btn" type="button" id="pickBtn"><svg class="i" aria-hidden="true"><use href="#i-image"/></svg>从相册导入</button>
+        <button class="btn primary" type="button" id="snapBtn" hidden>拍下这一刻</button>
+      </div>
+      <p class="hint" id="cameraHint" hidden></p>
+      <input type="file" id="fileInput" accept="image/*" hidden>
+      <input type="file" id="captureInput" accept="image/*" capture="environment" hidden>
+    </div>
+    <div class="field">
+      <div class="dateRow"><span id="dateLabel">日期</span><div class="seg lensGroup" role="group" aria-label="日期输入方式"><span class="lens" aria-hidden="true"></span><button type="button" id="modeSolar" aria-pressed="true">按公历</button><button type="button" id="modeLunar" aria-pressed="false">按农历</button></div></div>
+      <input id="dateInput" type="date" min="1901-02-19" max="2099-12-31" aria-labelledby="dateLabel" required>
+      <div class="lunarSel" id="lunarSel" hidden>
+        <select id="lyYear" aria-label="农历年"></select><select id="lyMonth" aria-label="农历月"></select><select id="lyDay" aria-label="农历日"></select>
+      </div>
+      <p class="convert" id="convert" aria-live="polite"></p>
+    </div>
+    <label class="field">标题（可选）<input id="titleInput" maxlength="70" placeholder="给这一刻起个名字"></label>
+    <label class="field">回忆笔记（可选）<textarea id="noteInput" maxlength="1000" placeholder="那天发生了什么？"></textarea></label>
+    <p class="issue" id="issue" role="alert" hidden></p>
+    <p class="hint" id="saveHint" hidden></p>
+    <div class="formFoot"><button class="btn ghost" type="button" id="formCancel">取消</button><button class="btn primary" type="submit" id="saveBtn">收进星图</button></div>
+  </form>
+</dialog>
+
+<dialog id="dataDialog" aria-labelledby="dataTitle">
+  <div class="dHead"><h2 id="dataTitle">数据与设置</h2><button class="btn icon ghost" id="dataClose" aria-label="关闭"><svg class="i" aria-hidden="true"><use href="#i-close"/></svg></button></div>
+  <div class="section" style="border:0;margin:0;padding-top:4px">
+    <h3>本机存储</h3>
+    <p id="storeStatus">正在检查…</p>
+    <div class="meter" aria-hidden="true"><i id="meterBar"></i></div>
+    <p id="storeDetail"></p>
+    <button class="btn sm" id="persistBtn" hidden>申请长期保存</button>
+  </div>
+  <div class="section">
+    <h3>备份与恢复</h3>
+    <p>备份文件包含你的全部照片与笔记（不含示例），可在其它设备或完整版中恢复。重复的回忆会自动合并，保留较新的版本。</p>
+    <div class="actions"><button class="btn" id="exportBtn">导出备份</button><button class="btn" id="importBtn">从备份恢复</button><input type="file" id="importInput" accept="application/json,.json" hidden></div>
+    <p class="hint" id="backupHint"></p>
+  </div>
+  <div class="section">
+    <h3>显示</h3>
+    <label class="switch">示例星图（12 个 AI 生成示例，与我的星图分开）<input type="checkbox" id="demoToggle"></label>
+    <label class="switch">减少动画<input type="checkbox" id="motionToggle"></label>
+  </div>
+  <div class="section" id="keysSection">
+    <h3>键盘操作</h3>
+    <dl class="keys">
+      <dt>← → ↑ ↓</dt><dd>旋转星图（按住 Shift 更快）</dd>
+      <dt>+ / −</dt><dd>放大 / 缩小</dd>
+      <dt>0</dt><dd>回到初始视角</dd>
+      <dt>[ / ]</dt><dd>上一颗 / 下一颗星星</dd>
+      <dt>Enter</dt><dd>打开选中星星的详情</dd>
+      <dt>/</dt><dd>查找回忆，↓ 进入结果</dd>
+      <dt>N</dt><dd>收藏一刻</dd>
+      <dt>R</dt><dd>随机寻星</dd>
+      <dt>E</dt><dd>编辑选中的回忆</dd>
+      <dt>Esc</dt><dd>关闭查找、面板或对话框</dd>
+    </dl>
+  </div>
+  <div class="section">
+    <h3>星图说明</h3>
+    <p>每一段回忆是一颗星。星星按收藏顺序均匀分布在整个球面上（包括两极），每颗星都有固定的位置：新增回忆不会挪动已有的星，删除后再撤销也会回到原处。背景天空中的四象神兽是汉代瓦当风格的发光剪影，伴有云气纹，二十八宿以星线和宿名标出，随星图一起转动；颜色对应四季：青龙春、朱雀夏、白虎秋、玄武冬。</p>
+    <p>「示例星图」与「我的星图」完全分开：示例里的 12 张图片由 AI 生成（仿摄影风格，非真实拍摄，不对应真实事件），随页面离线打包，不能编辑、不会进入备份。「我的星图」只显示你自己的照片，保存在本机。</p>
+  </div>
+</dialog>
+
+<dialog id="confirmDialog" aria-labelledby="confirmTitle">
+  <h2 id="confirmTitle">删除这段回忆？</h2>
+  <p id="confirmText" style="color:var(--dim)"></p>
+  <div class="formFoot"><button class="btn ghost" id="confirmNo">保留</button><button class="btn danger" id="confirmYes">删除</button></div>
+</dialog>
+
+<div class="toast rim" id="toast" role="status" hidden><span id="toastText"></span><button id="toastAction" hidden></button></div>
+<p class="sr" id="announce" aria-live="polite"></p>
+
+<script>
+/* ---------- v15 · 四象 as Han-tile brush-stroke silhouettes (vector, drawn once per size) ---------- */
+const HAN = (() => {
+/* stroke: centreline points (1000-unit box, y down), width profile; kind 'b' body stroke (lit rim + dark fill) or 'l' light line */
+const B = (p, w) => ({p, w, k:'b'}), Ln = (p, w) => ({p, w, k:'l'});
+function cr(P, t){
+  const n = P.length - 1, i = Math.min(n - 1, Math.max(0, Math.floor(t))), f = t - i;
+  const p0 = P[Math.max(0, i - 1)], p1 = P[i], p2 = P[i + 1], p3 = P[Math.min(n, i + 2)], f2 = f*f, f3 = f2*f;
+  return [0, 1].map(k => .5*(2*p1[k] + (-p0[k] + p2[k])*f + (2*p0[k] - 5*p1[k] + 4*p2[k] - p3[k])*f2 + (-p0[k] + 3*p1[k] - 3*p2[k] + p3[k])*f3));
+}
+function ribbon(st, shrink){
+  const P = st.p, N = Math.max(12, (P.length - 1)*18), pts = [];
+  for (let k = 0; k <= N; k++) pts.push(cr(P, k/N*(P.length - 1)));
+  const L = [0]; for (let k = 1; k <= N; k++) L.push(L[k - 1] + Math.hypot(pts[k][0] - pts[k - 1][0], pts[k][1] - pts[k - 1][1]));
+  const tot = L[N] || 1, W = st.w, m = W.length - 1;
+  const wAt = f => { const x = f*m, i = Math.min(m - 1, Math.floor(x)); return W[i] + (W[i + 1] - W[i])*(x - i); };
+  const left = [], right = [], ws = [];
+  for (let k = 0; k <= N; k++){
+    const a = pts[Math.max(0, k - 1)], b = pts[Math.min(N, k + 1)];
+    let tx = b[0] - a[0], ty = b[1] - a[1]; const tl = Math.hypot(tx, ty) || 1; tx /= tl; ty /= tl;
+    const w = Math.max(0, wAt(L[k]/tot)/2 - shrink); ws.push(w);
+    left.push([pts[k][0] - ty*w, pts[k][1] + tx*w]); right.push([pts[k][0] + ty*w, pts[k][1] - tx*w]);
+  }
+  const path = new Path2D(); path.moveTo(left[0][0], left[0][1]);
+  for (let k = 1; k <= N; k++) path.lineTo(left[k][0], left[k][1]);
+  const e = pts[N], ea = Math.atan2(left[N][1] - e[1], left[N][0] - e[0]); if (ws[N] > .3) path.arc(e[0], e[1], ws[N], ea, ea - Math.PI, true);
+  for (let k = N; k >= 0; k--) path.lineTo(right[k][0], right[k][1]);
+  const s = pts[0], sa = Math.atan2(right[0][1] - s[1], right[0][0] - s[0]); if (ws[0] > .3) path.arc(s[0], s[1], ws[0], sa, sa - Math.PI, true);
+  path.closePath(); return path;
+}
+/* flame / feather stroke: tapers and curls harder toward its tip */
+function flame(x, y, ang, len, w, turn = 1, n = 14, k = 'b'){
+  const pts = [[x, y]], ws = [w*.5]; let a = ang*Math.PI/180, px = x, py = y, prev = 0;
+  for (let i = 1; i <= n; i++){
+    const t = i/n, cur = Math.pow(t, 2.3); a += turn*(2.7*(cur - prev) + .015); prev = cur;
+    const st = len/n*(1 - .28*t); px += Math.cos(a)*st; py += Math.sin(a)*st; pts.push([px, py]);
+    ws.push(Math.max(.8, w*Math.min(1, .5 + t*4)*Math.pow(1 - t, 1.05)));
+  }
+  return {p:pts, w:ws, k};
+}
+/* ornaments: ring (pearl), Han cloud scroll, marks along a body stroke */
+const ring = (x, y, r, w) => { const p = []; for (let i = 0; i <= 24; i++){ const a = i/24*Math.PI*2; p.push([x + Math.cos(a)*r, y + Math.sin(a)*r]); } return {p, w:[w, w], k:'b'}; };
+/* Han cloud scroll (云气纹): a flowing tail that winds into a spiral, with a smaller counter-curl */
+function spiral(cx, cy, R, a0, turns, dir, w){
+  const pts = [], ws = [], n = Math.round(turns*28);
+  for (let i = 0; i <= n; i++){ const t = i/n, th = a0 - dir*t*turns*Math.PI*2, r = R*(1 - .82*t); pts.push([cx + Math.cos(th)*r, cy + Math.sin(th)*r]); ws.push(Math.max(1, w*(1 - .85*t))); }
+  return {p:pts, w:ws, k:'b'};
+}
+function cloud(x, y, sc = 1, dir = 1){
+  const X = v => x + v*sc*dir, Y = v => y + v*sc, R1 = 34*sc, R2 = 20*sc;
+  const tail = B([[X(-130), Y(26)], [X(-80), Y(30)], [X(-30), Y(22)], [X(10), Y(8)], [X(40), Y(-6)]], [2*sc, 8*sc, 13*sc, 16*sc, 17*sc]);
+  const sp1 = spiral(X(40), Y(-6) - R1, R1, Math.PI/2, 1.35, dir, 16*sc); sp1.p.unshift([X(30), Y(-2)]); sp1.w.unshift(16*sc);
+  const sp2 = spiral(X(-40), Y(20) - R2, R2, Math.PI/2, 1.2, -dir, 10*sc);
+  return [tail, sp1, sp2];
+}
+function marks(pts, from, to, n, len, w, side = 1, bend = 0){
+  const out = [];
+  for (let i = 0; i < n; i++){
+    const t = (from + (to - from)*(i + .5)/n)*(pts.length - 1), a = cr(pts, t), b = cr(pts, Math.min(pts.length - 1, t + .05));
+    let tx = b[0] - a[0], ty = b[1] - a[1]; const l = Math.hypot(tx, ty) || 1; tx /= l; ty /= l;
+    const nx = -ty*side, ny = tx*side;
+    out.push(Ln([[a[0] - tx*len*.5, a[1] - ty*len*.5], [a[0] + nx*len*.28 + tx*bend, a[1] + ny*len*.28 + ty*bend], [a[0] + tx*len*.5, a[1] + ty*len*.5]], [w*.4, w, w*.3]));
+  }
+  return out;
+}
+const claws = (x, y, dir = 1, s = 1) => [Ln([[x, y], [x + 22*dir*s, y - 12*s], [x + 30*dir*s, y - 4*s]], [6*s, 3*s, 1]), Ln([[x, y], [x + 26*dir*s, y + 2*s], [x + 32*dir*s, y + 10*s]], [6*s, 3*s, 1]), Ln([[x, y], [x + 16*dir*s, y + 14*s], [x + 18*dir*s, y + 24*s]], [6*s, 3*s, 1])];
+
+const DRAGON_BODY = [[198, 408], [212, 462], [256, 498], [332, 496], [410, 462], [484, 430], [562, 450], [634, 490], [704, 480], [752, 428], [772, 368], [790, 318]];
+const SNAKE = [[232, 602], [300, 622], [420, 612], [560, 600], [680, 560], [732, 470], [692, 380], [592, 340], [472, 350], [392, 400], [412, 470], [502, 492], [602, 462], [682, 402], [722, 322], [702, 252], [742, 202], [792, 190], [818, 204]];
+const FIG = {
+qinglong: [
+  B([[372, 516], [356, 590], [318, 640], [270, 650], [246, 640]], [30, 24, 16, 10, 5]), flame(250, 646, 200, 70, 9, -1.2),
+  B([[650, 514], [676, 588], [714, 630], [760, 632], [780, 620]], [28, 22, 15, 9, 5]), flame(700, 626, 120, 60, 8, 1.1),
+  ...cloud(270, 750, 1.5, 1), ...cloud(560, 240, 1.2, -1), ...cloud(110, 600, 1.1, 1),
+  flame(196, 404, 200, 150, 22, 1.4), flame(198, 420, 165, 130, 18, -1.3), flame(200, 392, 235, 120, 16, 1.6), flame(204, 430, 140, 120, 15, -1.6), flame(196, 386, 262, 110, 13, 1.8),
+  B(DRAGON_BODY, [16, 22, 30, 40, 48, 52, 54, 56, 54, 48, 42, 38]),
+  ...marks(DRAGON_BODY, .08, .92, 30, 22, 3.4, 1, 0), ...marks(DRAGON_BODY, .12, .88, 24, 16, 2.6, -1, 0),
+  ...[[286, 486], [350, 478], [414, 452], [478, 428], [548, 440], [612, 474], [680, 482], [738, 446]].map(([x, y], i) => flame(x, y - 16, 236 - i*3, 78 + (i%2)*18, 19, -1.0, 12)),
+  B([[408, 498], [388, 574], [344, 620], [294, 626], [268, 612]], [36, 28, 18, 11, 5]), ...claws(268, 612, -1), flame(372, 566, 190, 80, 12, -1.3),
+  B([[600, 496], [642, 572], [692, 606], [742, 604], [764, 590]], [34, 26, 17, 10, 5]), ...claws(764, 590, 1), flame(630, 560, 175, 86, 12, 1.2),
+  flame(800, 330, 160, 170, 22, -1.3), flame(796, 350, 185, 160, 19, -1.2), flame(806, 316, 135, 150, 18, -1.5), flame(790, 368, 205, 140, 16, -1.1), flame(812, 306, 112, 120, 14, -1.6),
+  B([[814, 344], [856, 352], [898, 362], [928, 380]], [22, 18, 11, 4]),
+  B([[786, 330], [818, 298], [860, 282], [908, 284], [942, 278], [972, 288]], [46, 44, 36, 26, 15, 6]),
+  flame(830, 290, 250, 150, 14, -1.25), flame(850, 286, 262, 120, 11, -1.1),
+  Ln([[872, 322], [918, 324], [946, 338], [954, 356]], [5, 4, 3, 1]),
+  flame(960, 296, 70, 200, 6, 1.6, 16, 'l'), flame(950, 300, 110, 180, 5, -1.4, 16, 'l'),
+  ring(900, 170, 30, 9), ...[0, 1, 2, 3, 4, 5].map(i => flame(900 + Math.cos(i*1.05)*36, 170 + Math.sin(i*1.05)*36, i*60 + 30, 40, 8, 1.6, 10)),
+  Ln([[888, 160], [902, 154]], [4, 2]),
+  Ln([[852, 300], [866, 297]], [6, 4]),
+  Ln([[262, 480], [340, 470], [420, 440], [492, 418]], [2, 2.6, 2.4, 1]), Ln([[562, 470], [632, 500], [694, 490]], [2, 2.6, 1])
+],
+baihu: [
+  ...cloud(300, 740, 1.5, 1), ...cloud(720, 720, 1.2, -1), ...cloud(880, 250, 1.0, -1),
+  ...[0, 1, 2, 3, 4, 5, 6].map(i => flame(660 - i*24, 420 - i*4, 236 + i*8, 220 + i*18, 32 - i*1.5, .8 - i*.04, 16)),
+  B([[338, 512], [352, 574], [398, 606], [446, 600]], [42, 32, 22, 13]), flame(442, 600, 10, 40, 12, 1.4),
+  B([[652, 496], [702, 534], [694, 584], [654, 604]], [38, 30, 20, 12]), flame(658, 604, 170, 40, 11, -1.4),
+  B([[258, 458], [204, 432], [154, 384], [132, 322], [148, 262], [194, 230]], [30, 26, 22, 18, 14, 10]), flame(192, 232, 334, 110, 13, 1.5), flame(196, 236, 300, 90, 11, 1.8), flame(188, 240, 10, 80, 10, 1.6),
+  B([[250, 482], [330, 440], [440, 408], [550, 412], [640, 432], [700, 426]], [72, 86, 82, 76, 86, 82]),
+  B([[356, 480], [306, 552], [238, 596], [170, 608]], [56, 40, 25, 14]), flame(174, 606, 168, 54, 14, -1.5), ...claws(150, 600, -1),
+  B([[644, 468], [702, 528], [770, 558], [828, 562]], [46, 34, 21, 12]), flame(824, 560, 18, 50, 12, 1.5), ...claws(848, 552, 1),
+  B([[690, 428], [734, 398], [770, 382]], [84, 78, 76]),
+
+  B([[762, 340], [752, 316], [738, 304]], [26, 16, 5]),
+  flame(764, 432, 150, 56, 18, -1.1), flame(782, 440, 122, 48, 15, -1.0),
+  B([[808, 428], [842, 440], [864, 448]], [30, 19, 6]),
+  B([[752, 382], [796, 362], [836, 366], [866, 378], [886, 396]], [96, 92, 70, 48, 22]),
+  B([[790, 330], [792, 304], [782, 288]], [30, 19, 6]),
+  Ln([[822, 360], [842, 357]], [7, 4]), Ln([[860, 392], [880, 396]], [5, 2]),
+  Ln([[812, 344], [832, 336], [852, 340]], [3, 3, 1]), B([[866, 404], [870, 422]], [8, 1]), B([[846, 408], [848, 424]], [7, 1]),
+  ...[[350, 610], [600, 606], [380, 470]].map(([x, y]) => flame(x, y, 200, 46, 10, -1.4)),
+  ...[[338, 406], [398, 390], [458, 384], [518, 386], [578, 394], [640, 400], [700, 392]].map(([x, y], i) => Ln([[x + 12, y - 6], [x, y + 16], [x - 14, y + 36 + (i%2)*10]], [8, 4.6, 1])),
+  ...[[300, 498], [372, 478], [604, 474]].map(([x, y]) => Ln([[x, y + 10], [x + 12, y - 8], [x + 24, y - 20]], [6, 3.4, 1])),
+  ...[[150, 340], [140, 300], [160, 266]].map(([x, y]) => Ln([[x - 14, y], [x + 14, y - 4]], [5, 1])),
+  flame(876, 404, 20, 60, 2.6, .6, 10, 'l'), flame(872, 414, 40, 54, 2.4, .5, 10, 'l')
+],
+zhuque: [
+  /* far wing (behind), tail plumes */
+  ...cloud(270, 840, 1.5, 1), ...cloud(790, 640, 1.2, -1), ...cloud(850, 140, 1.0, -1),
+  flame(404, 574, 186, 400, 36, 1.0, 18), flame(410, 586, 166, 380, 30, 1.15, 18), flame(416, 590, 146, 320, 26, -.9, 18), flame(400, 566, 200, 330, 24, 1.3, 18), flame(420, 594, 128, 280, 22, -1.2, 18),
+  B([[500, 708], [510, 650], [500, 575]], [8, 10, 14]), B([[580, 700], [566, 640], [540, 565]], [8, 10, 14]),
+  Ln([[500, 708], [528, 714]], [5, 1]), Ln([[500, 708], [478, 716]], [5, 1]), Ln([[580, 700], [606, 704]], [5, 1]), Ln([[580, 700], [560, 710]], [5, 1]),
+  B([[410, 566], [480, 536], [552, 494], [602, 450]], [44, 96, 88, 60]),
+  /* near wing: a broad arm with a fan of long feathers curling at the tips */
+  ...[0, 1, 2, 3, 4, 5, 6, 7].map(i => flame(512 - i*12, 430 - i*22, 178 + i*15, 200 + i*22, 32 - i, .55 + i*.04, 16)),
+  ...[0, 1, 2, 3, 4, 5].map(i => flame(530 - i*12, 446 - i*22, 192 + i*14, 110 + i*12, 24, .7, 12)),
+  B([[552, 486], [522, 424], [486, 364], [446, 312]], [64, 54, 40, 18]),
+  ...marks([[548, 480], [520, 420], [486, 364], [450, 316]], .1, .9, 7, 18, 3, -1),
+  B([[602, 452], [642, 402], [634, 342], [654, 292], [684, 264]], [56, 42, 34, 30, 28]),
+  flame(686, 256, 236, 170, 15, -1.0), flame(696, 252, 256, 150, 13, -.9), flame(678, 262, 214, 150, 13, -1.1), flame(690, 254, 246, 200, 10, -1.3), flame(674, 266, 200, 120, 10, -1.2),
+  ...marks([[600, 452], [640, 402], [632, 342], [652, 292]], .1, .9, 8, 16, 2.6, 1),
+  B([[676, 266], [706, 252], [732, 256], [766, 262], [792, 276]], [36, 30, 21, 9, 2]),
+  Ln([[706, 256], [718, 255]], [6, 4]),
+  ...marks([[410, 566], [480, 536], [552, 494], [602, 450]], .15, .9, 9, 26, 3.2, 1), ...marks([[420, 572], [490, 548], [560, 508]], .1, .9, 6, 20, 2.6, 1),
+  ring(640, 140, 22, 7), Ln([[628, 132], [640, 126]], [4, 2])
+],
+xuanwu: [
+  ...[0, 1, 2, 3, 4, 5, 6].map(i => flame(150 + i*115, 736, 285, 120, 20, -2.8, 18)),
+  B([[120, 748], [300, 740], [500, 746], [700, 738], [900, 744]], [3, 18, 20, 18, 3]),
+  ...cloud(820, 290, 1.2, -1), ...cloud(190, 360, 1.2, 1),
+  B([[640, 560], [680, 620], [726, 640]], [34, 24, 14]), B([[380, 560], [345, 615], [305, 632]], [34, 24, 14]),
+  B([[302, 520], [252, 535], [216, 520]], [18, 10, 3]),
+  B([[312, 542], [500, 566], [690, 542]], [22, 42, 22]),
+  B([[310, 522], [400, 444], [500, 422], [600, 444], [690, 522]], [30, 118, 150, 118, 30]),
+  ...[[420, 460], [500, 446], [580, 460], [460, 506], [540, 506], [380, 504], [620, 504]].map(([x2, y2]) => ring(x2, y2, 20, 3)).map(r => Object.assign(r, {k:'l'})),
+  ...[0, 1, 2, 3, 4, 5, 6, 7, 8].map(i => flame(330 + i*42, 532 - Math.sin(i/8*Math.PI)*28, 90, 18, 6, 1.4, 8)),
+  Ln([[400, 470], [450, 440], [500, 448], [550, 440], [600, 470]], [2.4, 2.6, 2.6, 2.6, 1.6]),
+  Ln([[450, 440], [452, 400]], [2.4, 1.4]), Ln([[550, 440], [548, 400]], [2.4, 1.4]), Ln([[500, 448], [500, 520]], [2.4, 1.4]),
+  Ln([[400, 470], [380, 520]], [2.4, 1.4]), Ln([[600, 470], [620, 520]], [2.4, 1.4]),
+  B([[680, 522], [740, 492], [790, 472], [830, 468]], [40, 34, 30, 30]),
+  B([[816, 462], [850, 462], [874, 474]], [40, 32, 18]),
+  Ln([[838, 456], [850, 455]], [5, 4]),
+  B([[620, 560], [652, 626], [692, 652], [726, 652]], [40, 28, 18, 8]), ...claws(726, 652, 1, .8),
+  B([[400, 560], [370, 626], [330, 652], [296, 652]], [40, 28, 18, 8]), ...claws(296, 652, -1, .8),
+  B(SNAKE, [2, 8, 14, 20, 24, 26, 26, 26, 26, 26, 26, 26, 25, 24, 23, 22, 22, 22, 18]),
+  ...marks(SNAKE, .1, .92, 40, 12, 2.2, 1),
+  flame(800, 186, 230, 90, 14, -1.3), flame(810, 182, 250, 80, 11, -1.2), flame(794, 192, 205, 70, 10, -1.1),
+  B([[800, 196], [840, 198], [862, 212]], [34, 26, 9]),
+  flame(700, 476, 160, 60, 14, -1.3), flame(690, 500, 190, 56, 12, -1.2), flame(640, 600, 160, 44, 10, -1.4), flame(400, 600, 20, 44, 10, 1.4),
+  Ln([[860, 212], [884, 214], [896, 206]], [2.4, 1.6, 1]), Ln([[884, 214], [894, 224]], [1.6, 1]),
+  Ln([[836, 196], [846, 195]], [4, 3])
+]};
+
+/* render one figure to a square canvas: per-stroke lit rim + dark fill, light lines, outer glow */
+const WMUL = {qinglong:1.4, baihu:1.15, zhuque:1.15, xuanwu:1.08};
+function render(key, px, rgb, lite){
+  const fig = FIG[key].map(st => st.k === 'b' ? Object.assign({}, st, {w:st.w.map(v => v*WMUL[key])}) : st), s = px/1000, rim = Math.max(1.1, 2.3*s*1000/900);
+  const F = document.createElement('canvas'); F.width = F.height = px; const f = F.getContext('2d');
+  f.setTransform(s, 0, 0, s, 0, 0); f.lineJoin = 'round';
+  const fill = `rgb(${rgb.map(v => Math.round(13 + v*.05)).join(',')})`, lit = `rgb(${lite.join(',')})`;
+  for (const st of fig){
+    if (st.k === 'b'){ f.fillStyle = lit; f.fill(ribbon(st, 0)); f.fillStyle = fill; f.fill(ribbon(st, rim/s)); }
+    else { f.globalAlpha = .72; f.fillStyle = lit; f.fill(ribbon(st, 0)); f.globalAlpha = 1; }
+  }
+  const O = document.createElement('canvas'); O.width = O.height = px; const o = O.getContext('2d');
+  const glow = (blur, a) => { o.save(); o.shadowColor = `rgba(${rgb.join(',')},${a})`; o.shadowBlur = blur; o.shadowOffsetX = px*4; o.drawImage(F, -px*4, 0); o.restore(); };
+  glow(px*.045, .55); glow(px*.016, .8); glow(px*.005, .9);
+  o.drawImage(F, 0, 0);
+  return O;
+}
+return {FIG, render, keys:['qinglong', 'xuanwu', 'baihu', 'zhuque']};
+})();
+
+</script>
+<script>
+/* 12 AI-generated photographic-style example scenes (not real photographs), bundled for offline use. */
+window.__DEMO_PHOTOS = {"lantern": "assets/demo/lantern.jpg", "boat": "assets/demo/boat.jpg", "snow": "assets/demo/snow.jpg", "moon": "assets/demo/moon.jpg", "mist": "assets/demo/mist.jpg", "dusk": "assets/demo/dusk.jpg", "clouds": "assets/demo/clouds.jpg", "window": "assets/demo/window.jpg", "alley": "assets/demo/alley.jpg", "lake": "assets/demo/lake.jpg", "rain": "assets/demo/rain.jpg", "path": "assets/demo/path.jpg"};
+</script>
+<script>
+{
+'use strict';
+const $ = id => document.getElementById(id);
+const TAU = Math.PI * 2;
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const DB_NAME = 'xingcang-lunar-atlas', DB_VERSION = 2;
+const UI_KEY = 'xingcang-ui-v2', DRAFT_KEY = 'xingcang-draft-v2';
+const mqReduce = matchMedia('(prefers-reduced-motion: reduce)');
+const mqMobile = matchMedia('(max-width:900px)');
+
+/* ---------- small storage helpers (may throw in sandboxes) ---------- */
+const ls = {
+  get(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch{ return null; } },
+  set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch{ return false; } },
+  del(k){ try{ localStorage.removeItem(k); }catch{} }
+};
+const ui = Object.assign({page:'atlas', selectedId:null, view:null, reduceMotion:false}, ls.get(UI_KEY) || {});
+if (ui.mode !== 'demo') ui.mode = 'mine'; /* v5: existing installs default to 我的星图; demos are an explicit separate view */
+delete ui.showDemos; delete ui.filter;
+let uiTimer;
+function saveUI(){ if (uiTimer) return; uiTimer = setTimeout(() => { uiTimer = 0; ls.set(UI_KEY, ui); }, 300); }
+const reduced = () => ui.reduceMotion || mqReduce.matches;
+function applyMotion(){ document.documentElement.classList.toggle('calm', reduced()); }
+applyMotion();
+
+/* ---------- native bridge (iOS app) ---------- */
+const Native = (() => {
+  const handler = window.webkit?.messageHandlers?.lunarAtlas;
+  if (!handler) return null;
+  let seq = 0; const pending = new Map();
+  window.__lunarAtlasNative = { resolve(id, ok, payload){ const p = pending.get(id); if(!p) return; pending.delete(id); ok ? p.res(payload) : p.rej(Object.assign(new Error(String(payload || 'cancelled')), {code: payload})); } };
+  return { call(action, args = {}){ return new Promise((res, rej) => { const id = ++seq; pending.set(id, {res, rej}); handler.postMessage({id, action, ...args}); }); } };
+})();
+
+/* ---------- environment ---------- */
+const env = {camera:true, persist:null, blocked:false};
+(() => {
+  if (Native) return;
+  try{ const pol = document.permissionsPolicy || document.featurePolicy; if (pol?.allowsFeature && !pol.allowsFeature('camera')) env.camera = false; }catch{}
+  if (!navigator.mediaDevices?.getUserMedia || !window.isSecureContext) env.camera = false;
+})();
+let downloadsApi = null;
+(async () => { try{ downloadsApi = await window.claude?.use?.('downloads') || null; }catch{ downloadsApi = null; } })();
+
+/* ---------- lunar calendar ---------- */
+const MONTHS = ['正月','二月','三月','四月','五月','六月','七月','八月','九月','十月','冬月','腊月'];
+const DIGITS = '一二三四五六七八九十';
+const STEMS = '甲乙丙丁戊己庚辛壬癸', BRANCHES = '子丑寅卯辰巳午未申酉戌亥', ZODIAC = '鼠牛虎兔龙蛇马羊猴鸡狗猪';
+const WEEK = '日一二三四五六';
+const fmtLong = new Intl.DateTimeFormat('zh-CN-u-ca-chinese', {calendar:'chinese', year:'numeric', month:'long', day:'numeric', timeZone:'UTC'});
+const fmtNum = new Intl.DateTimeFormat('en-u-ca-chinese', {calendar:'chinese', year:'numeric', month:'numeric', day:'numeric', timeZone:'UTC'});
+const SECTORS = [
+  {name:'青龙', dir:'东', season:'春', months:'正月至三月', angle:-.94, color:'#4fc28f'},
+  {name:'朱雀', dir:'南', season:'夏', months:'四月至六月', angle:.63, color:'#e2543f'},
+  {name:'白虎', dir:'西', season:'秋', months:'七月至九月', angle:2.20, color:'#d7dce4'},
+  {name:'玄武', dir:'北', season:'冬', months:'十月至腊月', angle:3.77, color:'#a070e0'}
+];
+for (const s of SECTORS) s.rgb = [1,3,5].map(i => parseInt(s.color.slice(i, i+2), 16)).join(',');
+const lunarCache = new Map();
+function isoDate(d = new Date()){ return [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-'); }
+function validIso(iso){ return typeof iso === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(iso) && iso >= '1901-01-01' && iso <= '2099-12-31'; }
+function lunarDate(iso){
+  if (!validIso(iso)) return null;
+  if (lunarCache.has(iso)) return lunarCache.get(iso);
+  let result = null;
+  try{
+    const date = new Date(iso + 'T12:00:00Z');
+    if (Number.isFinite(+date)){
+      const parts = f => Object.fromEntries(f.formatToParts(date).map(p => [p.type, p.value]));
+      const L = parts(fmtLong), N = parts(fmtNum);
+      const month = parseInt(N.month?.match(/\d+/)?.[0], 10) || MONTHS.findIndex(m => L.month?.endsWith(m)) + 1;
+      const day = parseInt(N.day, 10);
+      if (month && day){
+        const leap = /闰|閏|bis/.test((L.month||'') + (N.month||''));
+        const year = Number(L.relatedYear || N.relatedYear) || +iso.slice(0,4);
+        const cycle = ((year - 4) % 60 + 60) % 60;
+        const yearName = (L.yearName && /^[甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥]$/.test(L.yearName)) ? L.yearName : STEMS[cycle%10] + BRANCHES[cycle%12];
+        const dayName = day <= 10 ? '初' + DIGITS[day-1] : day < 20 ? '十' + DIGITS[day-11] : day === 20 ? '二十' : day < 30 ? '廿' + DIGITS[day-21] : '三十';
+        const monthName = (leap ? '闰' : '') + MONTHS[month-1];
+        result = {year, month, day, leap, yearName, zodiac:ZODIAC[cycle%12], monthName, dayName, text:yearName + '年 · ' + monthName + dayName, sector:SECTORS[Math.floor((month-1)/3)]};
+      }
+    }
+  }catch{ result = null; }
+  lunarCache.set(iso, result);
+  return result;
+}
+function solarText(iso){ const [y,m,d] = iso.split('-').map(Number); const w = new Date(y, m-1, d).getDay(); return `${y}年${m}月${d}日 星期${WEEK[w]}`; }
+function solarShort(iso){ const [y,m,d] = iso.split('-').map(Number); return `${y}.${m}.${d}`; }
+const yearTables = new Map();
+function lunarYearTable(Y){
+  if (yearTables.has(Y)) return yearTables.get(Y);
+  const table = new Map();
+  const start = Date.UTC(Y, 0, 10), end = Date.UTC(Y + 1, 1, 28);
+  for (let t = start; t <= end; t += 864e5){
+    const d = new Date(t); const iso = d.toISOString().slice(0,10);
+    const l = lunarDate(iso); if (!l || l.year !== Y) continue;
+    const key = l.month + (l.leap ? 'L' : '');
+    if (!table.has(key)) table.set(key, {label:l.monthName, days:new Map()});
+    table.get(key).days.set(l.day, iso);
+  }
+  yearTables.set(Y, table);
+  return table;
+}
+
+/* ---------- seeded helpers & demo samples ---------- */
+function randomFrom(seed){ return () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; }; }
+function hash(v){ let s = 2166136261; for (const c of v) s = Math.imul(s ^ c.charCodeAt(0), 16777619); return s >>> 0; }
+const DEMOS = [
+  ['2026-09-25','灯下团圆','中秋夜，老街的灯笼一路亮到尽头，石板路还湿着。','lantern'],
+  ['2026-06-19','河畔的端午','龙舟冲过水面，鼓声和水花一起扑过来。','boat'],
+  ['2026-02-17','新年的第一场雪','春节清晨，雪落在门楣上，福字和梅花都红得发亮。','snow'],
+  ['2026-11-08','冬夜来信','回家路上，雪压着枝头，抬头看了一会儿月亮。','moon'],
+  ['2026-04-05','山间薄雾','清明前后，雾在峰林之间慢慢散开。','mist'],
+  ['2026-08-19','七夕的晚霞','傍晚的河面映着两岸灯火，小船慢慢划过。','dusk'],
+  ['2025-10-29','重阳登高','到山顶时，松树下面已经是一片云海。','clouds'],
+  ['2025-12-21','冬至小窗','天黑得很早，灯下一壶热茶，窗里一直亮着。','window'],
+  ['2026-03-03','元宵小巷','灯影落在湿漉漉的青石板上。','alley'],
+  ['2026-05-24','夏初的水面','荷花刚开，湖上只剩一点风。','lake'],
+  ['2026-07-28','雨中的石桥','等雨时，有人撑着伞走过石桥。','rain'],
+  ['2026-10-16','月下归途','沿着山路一盏盏的灯，走回住处。','path']
+].map(([date,title,note,theme], i) => ({id:'demo-' + i, slot:i, date, title, note, theme, demo:true}));
+function sampleImage(theme){ return (window.__DEMO_PHOTOS || {})[theme] || ''; }
+
+/* ---------- memories ---------- */
+/* Stable incremental low-discrepancy sphere sampling (R2 sequence + equal-area mapping).
+   Slot n always maps to the same unit vector, independent of how many stories exist,
+   so existing stars never move as the collection grows. Covers the whole sphere incl. poles. */
+const R2G = 1.32471795724474602596, R2A = 1/R2G, R2B = 1/(R2G*R2G);
+function slotVector(n){
+  const u = (0.5 + n*R2A) % 1, v = (0.5 + n*R2B) % 1;
+  const y = 1 - 2*u, rr = Math.sqrt(Math.max(0, 1 - y*y)), phi = TAU*v;
+  return {x:rr*Math.cos(phi), y, z:rr*Math.sin(phi)};
+}
+const validSlot = n => Number.isInteger(n) && n >= 0 && n < 1e6;
+function freeSlot(exceptId){ const used = new Set(mine.filter(m => m.id !== exceptId).map(m => m.slot)); let n = 0; while (used.has(n)) n++; return n; }
+function slotTaken(n, id){ return mine.some(m => m.slot === n && m.id !== id); }
+function prepare(raw){ const lunar = lunarDate(raw.date); if (!lunar) return null; const item = {...raw, lunar}; item.position = slotVector(validSlot(raw.slot) ? raw.slot : 0); return item; }
+function rawOf(m){ return {id:m.id, slot:m.slot, date:m.date, title:m.title, note:m.note || '', blob:m.blob, createdAt:m.createdAt || null, updatedAt:m.updatedAt || null}; }
+const demoItems = DEMOS.map(prepare);
+let mine = [];
+let selectedId = ui.selectedId;
+let db = null;
+const urls = new Map();
+const allItems = () => ui.mode === 'demo' ? demoItems : mine;
+const byId = id => mine.find(m => m.id === id) || demoItems.find(m => m.id === id) || null;
+const selected = () => { const s = byId(selectedId); return s && (!!s.demo === (ui.mode === 'demo')) ? s : null; };
+function imageUrl(item){
+  if (item.demo) return sampleImage(item.theme);
+  if (!urls.has(item.id)) urls.set(item.id, URL.createObjectURL(item.blob));
+  return urls.get(item.id);
+}
+function dropUrl(id){ if (urls.has(id)){ URL.revokeObjectURL(urls.get(id)); urls.delete(id); } }
+function sorted(list){ return [...list].sort((a,b) => Number(!!a.demo) - Number(!!b.demo) || b.date.localeCompare(a.date) || String(b.id).localeCompare(String(a.id))); }
+function filtered(){ return sorted(allItems()); }
+
+/* ---------- IndexedDB (v1 compatible: store "memories" keyPath id) ---------- */
+function openDB(){
+  return new Promise((resolve, reject) => {
+    if (!window.indexedDB) return reject(new Error('no-idb'));
+    const timer = setTimeout(() => reject(new Error(env.blocked ? 'blocked' : 'timeout')), 6000);
+    let req;
+    try{ req = indexedDB.open(DB_NAME, DB_VERSION); }catch(e){ clearTimeout(timer); return reject(e); }
+    req.onupgradeneeded = () => {
+      const d = req.result;
+      if (!d.objectStoreNames.contains('memories')) d.createObjectStore('memories', {keyPath:'id'});
+      if (!d.objectStoreNames.contains('drafts')) d.createObjectStore('drafts', {keyPath:'id'});
+    };
+    req.onsuccess = () => { clearTimeout(timer); const d = req.result; d.onversionchange = () => d.close(); resolve(d); };
+    req.onerror = () => { clearTimeout(timer); reject(req.error); };
+    req.onblocked = () => { env.blocked = true; };
+  });
+}
+function idb(store, mode, fn){
+  return new Promise((resolve, reject) => {
+    let t; try{ t = db.transaction(store, mode); }catch(e){ return reject(e); }
+    const s = t.objectStore(store); let out; const r = fn(s);
+    if (r) r.onsuccess = () => { out = r.result; };
+    t.oncomplete = () => resolve(out);
+    t.onabort = t.onerror = () => reject(t.error || r?.error || new Error('transaction'));
+  });
+}
+function saveError(err){
+  const name = err?.name || '';
+  if (name === 'QuotaExceededError' || /quota/i.test(err?.message || '')) return '本机存储空间已满，这张照片没有保存。可以先在「数据」中导出备份，再删除部分回忆或清理浏览器空间。';
+  if (name === 'InvalidStateError') return '存储连接已断开（可能在其它标签页升级了星藏），请刷新后重试。照片尚未保存。';
+  return '保存失败' + (name ? '（' + name + '）' : '') + '，照片尚未写入本机，请重试或先导出备份。';
+}
+
+/* ---------- UI helpers ---------- */
+function el(tag, cls, text){ const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; }
+let toastTimer;
+function notify(msg, action){
+  $('toastText').textContent = msg; $('toast').hidden = false;
+  const b = $('toastAction');
+  if (action){ b.hidden = false; b.textContent = action.label; b.onclick = () => { $('toast').hidden = true; action.run(); }; } else b.hidden = true;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { $('toast').hidden = true; }, action ? 6500 : 3200);
+}
+function announce(msg){ $('announce').textContent = ''; setTimeout(() => { $('announce').textContent = msg; }, 30); }
+function thumb(item, eager){ const i = el('img'); i.src = imageUrl(item); i.alt = item.title; i.loading = eager ? 'eager' : 'lazy'; i.decoding = 'async'; return i; }
+function badgeFor(item, short){ return item.demo ? el('span','badge demo', short ? 'AI 示例' : 'AI 生成示例') : item.temp ? el('span','badge temp','未长期保存') : el('span','badge mine','我的'); }
+
+/* ---------- render ---------- */
+function renderDetail(){
+  const box = $('detail'); box.replaceChildren();
+  const s = selected();
+  if (!s){ box.append(el('p','empty', allItems().length ? '点一颗星星，打开那一天。' : '还没有星星。点「收藏一刻」，放进第一颗。')); return; }
+  const head = el('div','cardHead'); const x = el('button','btn icon ghost detailClose'); x.type = 'button'; x.setAttribute('aria-label','收起照片'); x.title = '收起（照片飞回星星）'; x.innerHTML = '<svg class="i" aria-hidden="true"><use href="#i-close"/></svg>'; x.onclick = flyClose; head.append(el('h2','','星中记忆'), badgeFor(s), x);
+  const photo = el('div','photo'); photo.append(thumb(s, true)); if (s.demo) photo.append(el('span','photoTag','AI 生成 · 非真实拍摄'));
+  const info = el('div','details');
+  info.append(el('p','lunarBig', s.lunar.text), el('h3','', s.title));
+  const dl = el('dl','compare');
+  const pairs = [['公历', solarText(s.date)], ['农历', `${s.lunar.yearName}年（${s.lunar.zodiac}年）${s.lunar.monthName}${s.lunar.dayName}${s.lunar.leap ? ' · 闰月' : ''}`], ['天区', `${s.lunar.sector.name} · ${s.lunar.sector.dir}方 · ${s.lunar.sector.season}`]];
+  for (const [k,v] of pairs){ dl.append(el('dt','',k), el('dd','',v)); }
+  info.append(dl);
+  if (s.note) info.append(el('p','note', s.note));
+  const act = el('div','actions');
+  const locate = el('button','btn sm','在星图中定位'); locate.type = 'button'; locate.onclick = () => { focusStar(s); closeSheet(); $('space').focus(); };
+  act.append(locate);
+  if (s.demo){ info.append(act, el('p','demoNote','这是 AI 生成的示例场景（仿摄影风格，非真实拍摄），用来展示星图效果；不能编辑，也不会进入备份。可在「数据」中隐藏示例。')); }
+  else {
+    const edit = el('button','btn sm','编辑'); edit.type = 'button'; edit.onclick = () => openForm(s);
+    const del = el('button','btn sm danger','删除'); del.type = 'button'; del.onclick = () => askDelete(s);
+    act.append(edit, del); info.append(act);
+    if (s.temp) info.append(el('p','hint warn','这段回忆只存在于当前页面：此环境无法长期保存，关闭前请到「数据」导出备份。'));
+  }
+  box.append(head, photo, info);
+}
+function makeRow(item, inResults){
+  const b = el('button','row'); b.type = 'button';
+  if (inResults) b.setAttribute('role','option');
+  if (item.id === selectedId) b.setAttribute('aria-current','true');
+  const t = el('span','t'); t.append(el('strong','', item.title), el('small','', item.lunar.monthName + item.lunar.dayName + ' · ' + solarShort(item.date) + (item.demo ? ' · AI 示例' : '')));
+  b.append(thumb(item), t, el('span','dot ' + (item.demo ? 'demo' : 'mine')));
+  b.setAttribute('aria-label', `${item.title}，${item.lunar.text}，公历${solarText(item.date)}${item.demo ? '，AI 生成示例' : ''}`);
+  b.addEventListener('click', () => { choose(item, {focus:true, open:true, fly:true}); if (inResults) closeSearch(); });
+  return b;
+}
+function renderList(){
+  const items = filtered();
+  $('count').textContent = ui.mode === 'demo' ? `${demoItems.length} 个 AI 示例` : mine.length + ' 颗我的星' + (mine.some(m => m.temp) ? ' · 未保存' : '');
+  $('rows').replaceChildren(...(items.length ? items.map(i => makeRow(i)) : [el('p','empty', '还没有自己的回忆。收藏第一刻，或切换到「示例星图」看看。')]));
+  for (const c of document.querySelectorAll('[data-mode]')) c.setAttribute('aria-pressed', String(c.dataset.mode === ui.mode));
+  $('skyTitle').textContent = ui.mode === 'demo' ? '示例星图' : '我的星图';
+  $('skySub').textContent = ui.mode === 'demo' ? `${demoItems.length} 颗 · AI 生成示例，非真实记录` : (mine.length ? `${mine.length} 颗星 · 一段回忆，一颗星` : '一段回忆，一颗星');
+  $('skyEmpty').hidden = allItems().length > 0 || (ui.mode === 'mine' && env.persist === null);
+  if (ui.page === 'archive') renderArchive(items);
+  placeLenses();
+}
+function renderArchive(items){
+  const body = $('archiveBody'); body.replaceChildren();
+  if (!items.length){ body.append(el('p','empty','没有可显示的回忆。')); return; }
+  const groups = new Map();
+  for (const m of items){ const k = (m.demo ? 'AI 示例 · ' : '') + m.lunar.yearName + '年（' + m.lunar.year + '）'; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(m); }
+  for (const [k, list] of groups){
+    body.append(el('h2','yearHead', k));
+    const g = el('div','grid');
+    for (const m of list){
+      const t = el('button','tile'); t.type = 'button';
+      const d = el('div'); const st = el('strong'); st.append(el('span','', m.title), badgeFor(m, true));
+      d.append(st, el('small','', m.lunar.monthName + m.lunar.dayName + ' · ' + m.lunar.sector.name), el('em','', solarText(m.date)));
+      t.append(thumb(m), d); t.onclick = () => { setPage('atlas'); requestAnimationFrame(() => choose(m, {focus:true, open:true, fly:true})); };
+      g.append(t);
+    }
+    body.append(g);
+  }
+  if (archiveStagger && motionOK()){
+    body.querySelectorAll('.yearHead,.tile').forEach((t, i) => t.animate([{opacity:0, transform:'translateY(18px) scale(.95)', filter:'blur(6px)'},{opacity:1, transform:'none', filter:'blur(0)'}], {duration:460, delay:Math.min(i, 16)*38, easing:'cubic-bezier(.2,.8,.2,1)', fill:'backwards'}));
+  }
+  archiveStagger = false;
+}
+function renderAll(){ renderDetail(); renderList(); requestFrame(); }
+function setPage(page){
+  const changed = ui.page !== page;
+  ui.page = page; saveUI();
+  $('atlas').hidden = page !== 'atlas'; $('archive').hidden = page !== 'archive';
+  document.body.dataset.page = page;
+  if (page === 'archive' && (changed || !pageReady)) archiveStagger = true;
+  if (changed && pageReady && motionOK()){ const sec = $(page); sec.getAnimations().forEach(a => a.cancel()); sec.animate([{opacity:0, transform:'translateY(12px)'},{opacity:1, transform:'none'}], {duration:340, easing:'cubic-bezier(.2,.8,.2,1)'}); }
+  $('pageTitle').textContent = page === 'atlas' ? '我的星图' : '我的记忆集';
+  $('subhead').textContent = page === 'atlas' ? '一段回忆，一颗星：星星均匀散布在天球上，四象神兽的发光剪影与二十八宿星线随星图一起转动。' : '按农历年份翻看收藏在星图里的时刻。';
+  for (const [b, on] of [[$('atlasTab'), page === 'atlas'], [$('archiveTab'), page === 'archive']]) on ? b.setAttribute('aria-current','page') : b.removeAttribute('aria-current');
+  if (page !== 'atlas') closeSheet();
+  window.scrollTo(0, 0);
+  renderList(); requestFrame(); resize();
+}
+function choose(item, {focus = false, open = false, fly = false} = {}){
+  if (item && !!item.demo !== (ui.mode === 'demo')) setMode(item.demo ? 'demo' : 'mine', {keepSelection:true});
+  const from = fly && item && ui.page === 'atlas' && !igniting.has(item.id) ? screenOf(item, cam) : null;
+  selectedId = item?.id || null; ui.selectedId = selectedId; if (item) ui[item.demo ? 'selDemo' : 'selMine'] = item.id; saveUI();
+  if (item && ui.page !== 'atlas') setPage('atlas');
+  if (item && focus) focusStar(item);
+  renderDetail(); renderList(); requestFrame();
+  if (item){ announce(`已选中：${item.title}，${item.lunar.text}，公历${solarText(item.date)}${item.demo ? '，示例' : ''}`); if (open) openSheet('detail', {pop:fly}); if (fly) flyOpen(item, from); }
+}
+
+/* ---------- mobile sheet ---------- */
+const isMobile = () => mqMobile.matches;
+function openSheet(view, {pop = false} = {}){
+  if (!isMobile()) return;
+  const side = $('side'), was = side.classList.contains('open');
+  side.getAnimations().forEach(a => a.cancel());
+  side.dataset.view = view;
+  if (pop && !was && motionOK()){ side.style.transition = 'none'; side.classList.add('open'); void side.offsetHeight; side.style.transition = ''; side.animate([{opacity:0},{opacity:1}], {duration:240, easing:'ease-out'}); }
+  else side.classList.add('open');
+  side.style.removeProperty('--drag');
+  $('sheetDetail').setAttribute('aria-pressed', String(view === 'detail')); $('sheetList').setAttribute('aria-pressed', String(view === 'list'));
+  $('dockList').setAttribute('aria-pressed', String(view === 'list'));
+  placeLenses();
+}
+function closeSheet(instant){
+  const side = $('side');
+  if (instant){ side.style.transition = 'none'; side.classList.remove('open'); void side.offsetHeight; side.style.transition = ''; }
+  else side.classList.remove('open');
+  side.style.removeProperty('--drag'); $('dockList').setAttribute('aria-pressed','false');
+}
+function dismissSheet(){ const side = $('side'); if (side.classList.contains('open') && side.dataset.view === 'detail' && selected()) flyClose(); else closeSheet(); }
+$('sheetDetail').onclick = () => openSheet('detail');
+$('sheetList').onclick = () => openSheet('list');
+$('sheetClose').onclick = dismissSheet;
+{
+  let drag = null;
+  const h = $('sheetHandle');
+  h.addEventListener('pointerdown', e => { drag = {y:e.clientY, dy:0}; h.setPointerCapture(e.pointerId); $('side').style.transition = 'none'; });
+  h.addEventListener('pointermove', e => { if (!drag) return; drag.dy = Math.max(0, e.clientY - drag.y); $('side').style.setProperty('--drag', drag.dy + 'px'); });
+  const end = () => { if (!drag) return; $('side').style.transition = ''; if (drag.dy > 90) dismissSheet(); else $('side').style.removeProperty('--drag'); drag = null; };
+  h.addEventListener('pointerup', end); h.addEventListener('pointercancel', end);
+  h.addEventListener('click', () => { if (!drag) dismissSheet(); });
+}
+
+/* ---------- search ---------- */
+function searchItems(q){
+  q = q.trim().toLowerCase(); if (!q) return [];
+  const norm = v => String(v).toLowerCase().replace(/[\s·.\/年月日号-]/g, '');
+  return sorted(allItems()).filter(m => {
+    const l = m.lunar, [y, mo, d] = m.date.split('-').map(Number);
+    const hay = [m.title, m.note, m.date, l.text, l.yearName, l.zodiac + '年', l.monthName + l.dayName, (l.leap ? '闰' : '') + l.month + '月' + l.day, l.sector.name, l.sector.season, `${y}年${mo}月${d}日`, `${mo}月${d}日`, `${y}.${mo}.${d}`, m.demo ? '示例 AI 生成' : '我的',
+      l.month === 11 ? '十一月' + l.dayName : '', l.month === 12 ? '十二月' + l.dayName : ''];
+    return q.split(/\s+/).every(term => hay.some(v => v && norm(v).includes(norm(term))));
+  });
+}
+function renderSearch(){
+  const q = $('search').value;
+  if (!q.trim()){ closeSearch(true); return; }
+  const items = searchItems(q);
+  $('results').hidden = false; $('search').setAttribute('aria-expanded','true');
+  $('results').replaceChildren(...(items.length ? items.slice(0, 30).map(i => makeRow(i, true)) : [el('p','empty','没有找到。可以试试「八月十五」「2026年9月」「白虎」或标题里的词。')]));
+}
+function closeSearch(keepOpen){ $('results').hidden = true; $('search').setAttribute('aria-expanded','false'); if (!keepOpen){ document.body.classList.remove('searching'); $('dockSearch').setAttribute('aria-pressed','false'); } }
+$('search').addEventListener('input', renderSearch);
+$('search').addEventListener('focus', renderSearch);
+$('search').addEventListener('keydown', e => {
+  if (e.key === 'Escape'){ $('search').value = ''; closeSearch(); $('search').blur(); return; }
+  if (e.key === 'ArrowDown'){ const f = $('results').querySelector('button'); if (f){ e.preventDefault(); f.focus(); } }
+  if (e.key === 'Enter'){ const first = searchItems($('search').value)[0]; if (first){ e.preventDefault(); choose(first, {focus:true, open:true, fly:true}); closeSearch(); } }
+});
+$('results').addEventListener('keydown', e => {
+  const items = [...$('results').querySelectorAll('button')]; const i = items.indexOf(document.activeElement);
+  if (e.key === 'ArrowDown' && i < items.length - 1){ e.preventDefault(); items[i+1].focus(); }
+  if (e.key === 'ArrowUp'){ e.preventDefault(); i > 0 ? items[i-1].focus() : $('search').focus(); }
+  if (e.key === 'Escape'){ closeSearch(); $('search').focus(); }
+});
+document.addEventListener('pointerdown', e => { if (!e.target.closest('.searchShell') && !e.target.closest('#dockSearch')) closeSearch(); });
+$('dockSearch').onclick = () => { const on = !document.body.classList.contains('searching'); document.body.classList.toggle('searching', on); $('dockSearch').setAttribute('aria-pressed', String(on)); if (on){ closeSheet(); $('search').focus(); } };
+
+/* ---------- 3D sky ---------- */
+const canvas = $('space'), ctx = canvas.getContext('2d');
+const bd = $('backdrop'), bctx = bd.getContext('2d');
+document.body.prepend(bd); let VW = innerWidth, VH = innerHeight;
+let bdKey = '';
+const INITIAL = {yaw:0, pitch:0, zoom:1};
+const PITCH_MAX = Math.PI/2 - .001;
+const cam = {...INITIAL, ...(ui.view || {})}, target = {...cam};
+function point(r, a, h = 0){ return {x:Math.cos(a)*r, y:h, z:Math.sin(a)*r}; }
+let W = 0, H = 0, DPR = 1, pending = false, picks = [], hover = null, focusAt = null, ptrPos = null, peekItem = null;
+const haloLevels = new Map();
+let ca = 1, sa = 0, cp = 1, sp = 0, scale = 1;
+function project(o){
+  const x = o.x*ca - o.z*sa, z = o.x*sa + o.z*ca;
+  const v = o.y*cp - z*sp, depth = o.y*sp + z*cp, dist = 4.15 - depth;
+  if (dist < .35) return null;
+  const k = 4.15 / dist;
+  return {x:W*.5 + x*scale*k, y:H*.52 - v*scale*k, p:k, depth};
+}
+function stroke(pts, color, dash){ ctx.beginPath(); let on = false; for (const q of pts){ const p = project(q); if (!p){ on = false; continue; } on ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y); on = true; } ctx.setLineDash(dash || []); ctx.strokeStyle = color; ctx.stroke(); ctx.setLineDash([]); }
+function dot(x, y, r, fill){ ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fillStyle = fill; ctx.fill(); }
+function glow(x, y, r, c, a){ const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, `rgba(${c},${a})`); g.addColorStop(.28, `rgba(${c},${a*.42})`); g.addColorStop(1, `rgba(${c},0)`); ctx.fillStyle = g; ctx.fillRect(x-r, y-r, r*2, r*2); }
+const DRIFT = 0.000035; /* rad per ms: one quiet turn every few minutes */
+let lastT = 0, lastInteract = 0, driftTimer = 0;
+function touchInteract(){ lastInteract = performance.now(); }
+function driftOK(now){ return !reduced() && !pointerState.start && !peekItem && !document.hidden && ui.page === 'atlas' && now - lastInteract > 2600 && allItems().length > 0 && !$('formDialog').open; }
+function scheduleDrift(){ if (driftTimer || reduced()) return; driftTimer = setTimeout(() => { driftTimer = 0; requestFrame(); }, 2800); }
+document.addEventListener('visibilitychange', () => { if (!document.hidden){ lastT = 0; requestFrame(); } });
+function mixWhite(rgb, k){ return rgb.split(',').map(v => Math.round(+v + (255 - +v)*k)).join(','); }
+function draw(time){
+  pending = false;
+  if (!W || !H || ui.page !== 'atlas') return;
+  const now = time || performance.now(), dt = lastT ? Math.min(64, now - lastT) : 16; lastT = now;
+  let moving = false;
+  const drift = driftOK(now);
+  if (drift){ target.yaw += dt*DRIFT; cam.yaw += dt*DRIFT; }
+  for (const k of ['yaw','pitch','zoom']){
+    const d = target[k] - cam[k];
+    if (Math.abs(d) > .0004){ cam[k] += d * (reduced() ? 1 : pointerState.moved ? .5 : .16); moving = true; } else cam[k] = target[k];
+  }
+  ca = Math.cos(cam.yaw); sa = Math.sin(cam.yaw); cp = Math.cos(cam.pitch); sp = Math.sin(cam.pitch);
+  scale = Math.min(W, H) * .38 * cam.zoom;
+  drawBackdrop();
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, W, H);
+  const cx = W*.5, cy = H*.52;
+  const light = ctx.createRadialGradient(cx - scale*.4, cy - scale*.5, 0, cx, cy, scale*1.8);
+  light.addColorStop(0, 'rgba(225,228,236,.05)'); light.addColorStop(.5, 'rgba(120,124,132,.035)'); light.addColorStop(1, 'rgba(6,6,8,0)');
+  ctx.fillStyle = light; ctx.fillRect(0, 0, W, H);
+  const sel = selected();
+  picks = allItems().filter(m => !igniting.has(m.id)).map(item => ({item, p:project(item.position)})).filter(o => o.p).sort((a, b) => a.p.depth - b.p.depth);
+  let haloMoving = false;
+  for (const {item, p} of picks){
+    const t = ptrPos ? Math.max(0, 1 - Math.hypot(p.x - ptrPos.x, p.y - ptrPos.y)/120) ** 2 : 0;
+    const cur = haloLevels.get(item.id) || 0, nxt = reduced() ? t : cur + (t - cur)*.2;
+    if (Math.abs(nxt - t) > .004) haloMoving = true;
+    if (t === 0 && nxt < .003) haloLevels.delete(item.id); else haloLevels.set(item.id, nxt);
+  }
+  if (haloMoving) moving = true;
+  const zk = Math.min(1.25, Math.sqrt(cam.zoom));
+  for (const {item, p} of picks){
+    const active = sel && item.id === sel.id, aimed = item.id === hover, lv = haloLevels.get(item.id) || 0;
+    const f = (p.depth + 1)/2;
+    const r = (2.6 + 2.6*f)*zk;                             /* 5–10 CSS px sphere by depth */
+    const tone = Math.round(118 + 54*f);                    /* muted grey, nearer = a little lighter */
+    const boost = Math.max(active ? .85 : 0, aimed ? .55 : 0, lv*.8);
+    const hr = r*(3 + 2.4*boost) + 5*zk, ha = .06 + .07*f + .17*boost, ht = Math.min(200, tone + 18);
+    const hg = ctx.createRadialGradient(p.x, p.y, r*.6, p.x, p.y, hr);
+    hg.addColorStop(0, `rgba(${ht},${ht},${ht + 5},${ha.toFixed(3)})`); hg.addColorStop(.3, `rgba(${ht},${ht},${ht + 5},${(ha*.5).toFixed(3)})`);
+    hg.addColorStop(.62, `rgba(${ht},${ht},${ht + 5},${(ha*.14).toFixed(3)})`); hg.addColorStop(1, `rgba(${ht},${ht},${ht + 5},0)`);
+    ctx.fillStyle = hg; ctx.fillRect(p.x - hr, p.y - hr, hr*2, hr*2);
+    const hi = Math.min(214, tone + 44 + Math.round(boost*14)), lo = Math.round(tone*.42), al = (.82 + .16*f).toFixed(3);
+    const sg = ctx.createRadialGradient(p.x - r*.36, p.y - r*.4, r*.06, p.x, p.y, r*1.04);
+    sg.addColorStop(0, `rgba(${hi},${hi},${hi + 4},${al})`); sg.addColorStop(.42, `rgba(${tone},${tone},${tone + 4},${al})`);
+    sg.addColorStop(.86, `rgba(${Math.round(tone*.62)},${Math.round(tone*.62)},${Math.round(tone*.62) + 4},${al})`); sg.addColorStop(1, `rgba(${lo},${lo},${lo + 3},${al})`);
+    ctx.fillStyle = sg; ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, TAU); ctx.fill();
+    if (boost > .3){ ctx.lineWidth = 1; ctx.strokeStyle = `rgba(210,213,220,${(.1 + .12*boost).toFixed(3)})`; ctx.beginPath(); ctx.arc(p.x, p.y, r + 1.5, 0, TAU); ctx.stroke(); }
+    if (active && f > .35 && !(peekItem && peekItem.id === item.id)){
+      ctx.font = '500 13px "PingFang SC","Noto Sans SC",system-ui,sans-serif'; ctx.textAlign = 'left';
+      const title = item.title.length > 12 ? item.title.slice(0, 12) + '…' : item.title;
+      const text = title + ' · ' + item.lunar.monthName + item.lunar.dayName + (item.demo ? ' · AI 示例' : '');
+      const tw = ctx.measureText(text).width;
+      const lx = clamp(p.x + 12, 4, W - tw - 20), ly = clamp(p.y - 22, 8, H - 30);
+      ctx.fillStyle = 'rgba(16,17,20,.82)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(lx, ly, tw + 16, 26, 7) : ctx.rect(lx, ly, tw + 16, 26); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,.1)'; ctx.stroke();
+      ctx.fillStyle = '#E6E8EC'; ctx.fillText(text, lx + 8, ly + 17.5);
+    }
+  }
+  if (peekItem){ const o = picks.find(q => q.item.id === peekItem.id); o ? placePeek(o.p) : hidePeek(); }
+  ui.view = {yaw:target.yaw, pitch:target.pitch, zoom:target.zoom}; saveUI();
+  if (moving || drift) requestFrame(); else if (!reduced() && picks.length) scheduleDrift();
+}
+function requestFrame(){ if (pending || ui.page !== 'atlas') return; pending = true; requestAnimationFrame(draw); }
+function resize(){
+  const r = $('sky').getBoundingClientRect(); if (!r.width || !r.height) return;
+  W = r.width; H = r.height; DPR = Math.min(devicePixelRatio || 1, 2);
+  canvas.width = Math.round(W*DPR); canvas.height = Math.round(H*DPR); VW = innerWidth; VH = innerHeight; bd.width = Math.round(VW*DPR); bd.height = Math.round(VH*DPR); { const f = $('skyfx'); f.width = bd.width; f.height = bd.height; } bdKey = ''; requestFrame();
+}
+new ResizeObserver(resize).observe($('sky'));
+addEventListener('resize', resize);
+addEventListener('scroll', () => { bdKey = ''; requestFrame(); }, {passive:true});
+function viewFor(pos){ return {yaw:Math.atan2(pos.x, pos.z), pitch:Math.atan2(pos.y, Math.hypot(pos.x, pos.z))}; }
+function focusStar(item, instant){
+  if (!item) return;
+  const v = viewFor(item.position);
+  target.yaw += Math.atan2(Math.sin(v.yaw - target.yaw), Math.cos(v.yaw - target.yaw));
+  target.pitch = clamp(v.pitch, -PITCH_MAX, PITCH_MAX);
+  if (instant){ cam.yaw = target.yaw; cam.pitch = target.pitch; }
+  focusAt = instant ? null : performance.now(); touchInteract(); requestFrame();
+}
+function resetView(){ target.zoom = 1; const s = selected() || sorted(allItems())[0]; if (s) focusStar(s); else { Object.assign(target, INITIAL); requestFrame(); } }
+function hitTest(cx, cy, touch){
+  const r = canvas.getBoundingClientRect(), x = cx - r.left, y = cy - r.top;
+  const lim = touch ? 30 : 22; let best = null, score = Infinity;
+  for (const {item, p} of picks){ const d = Math.hypot(p.x - x, p.y - y); if (d > lim) continue; const sc = d - p.depth*6; if (sc < score){ score = sc; best = item; } }
+  return best;
+}
+function zoomBy(k){ target.zoom = clamp(target.zoom * k, .5, 2.8); requestFrame(); }
+const pointers = new Map();
+const pointerState = {moved:false, start:null, pinch:null};
+canvas.addEventListener('pointerdown', e => {
+  if (e.button !== 0 && e.pointerType === 'mouse') return;
+  touchInteract();
+  canvas.setPointerCapture(e.pointerId);
+  pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+  if (pointers.size === 1){ pointerState.start = {x:e.clientX, y:e.clientY, yaw:target.yaw, pitch:target.pitch}; pointerState.moved = false; }
+  if (e.pointerType !== 'mouse' && pointers.size === 1){ const it = hitTest(e.clientX, e.clientY, true); if (it){ hover = it.id; const rr = canvas.getBoundingClientRect(); ptrPos = {x:e.clientX - rr.left, y:e.clientY - rr.top}; showPeek(it); requestFrame(); } }
+  if (pointers.size === 2){ const [a, b] = [...pointers.values()]; pointerState.pinch = {d:Math.hypot(a.x-b.x, a.y-b.y), zoom:target.zoom}; pointerState.moved = true; }
+});
+canvas.addEventListener('pointermove', e => {
+  if (pointers.has(e.pointerId)){
+    pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+    if (pointers.size >= 2 && pointerState.pinch){ const [a, b] = [...pointers.values()]; target.zoom = clamp(pointerState.pinch.zoom * Math.hypot(a.x-b.x, a.y-b.y) / pointerState.pinch.d, .5, 2.8); requestFrame(); return; }
+    const s = pointerState.start; if (!s) return;
+    const dx = e.clientX - s.x, dy = e.clientY - s.y;
+    if (pointerState.moved || Math.hypot(dx, dy) > 5){ pointerState.moved = true; canvas.classList.add('dragging'); hover = null; ptrPos = null; hidePeek(); target.yaw = s.yaw + dx*.008; target.pitch = clamp(s.pitch + dy*.008, -PITCH_MAX, PITCH_MAX); requestFrame(); }
+    return;
+  }
+  if (e.pointerType !== 'mouse') return;
+  touchInteract();
+  const rr = canvas.getBoundingClientRect(); ptrPos = {x:e.clientX - rr.left, y:e.clientY - rr.top};
+  const id = hitTest(e.clientX, e.clientY, false)?.id || null;
+  if (id !== hover){ hover = id; canvas.classList.toggle('over', !!id); if (id) showPeek(byId(id)); else hidePeek(); }
+  requestFrame();
+});
+function endPointer(e){
+  if (!pointers.has(e.pointerId)) return;
+  pointers.delete(e.pointerId);
+  if (e.type === 'pointerup' && !pointerState.moved && pointers.size === 0){
+    const item = hitTest(e.clientX, e.clientY, e.pointerType !== 'mouse');
+    hidePeek();
+    if (item) choose(item, {open:true, fly:true});
+  }
+  if (pointers.size < 2) pointerState.pinch = null;
+  if (pointers.size === 0){ pointerState.start = null; pointerState.moved = false; canvas.classList.remove('dragging'); if (e.pointerType !== 'mouse'){ hover = null; ptrPos = null; hidePeek(); } requestFrame(); }
+}
+canvas.addEventListener('pointerup', endPointer);
+canvas.addEventListener('pointercancel', endPointer);
+canvas.addEventListener('pointerleave', e => { if (e.pointerType !== 'mouse') return; hover = null; ptrPos = null; canvas.classList.remove('over'); hidePeek(); requestFrame(); });
+canvas.addEventListener('wheel', e => { e.preventDefault(); touchInteract(); zoomBy(Math.exp(clamp(-e.deltaY, -160, 160)*.002)); }, {passive:false});
+function starOrder(){ return allItems().slice().sort((a, b) => a.slot - b.slot); }
+function stepStar(dir){
+  const list = starOrder(); if (!list.length) return;
+  const i = list.findIndex(m => m.id === selectedId);
+  const next = list[(i < 0 ? 0 : i + dir + list.length) % list.length];
+  choose(next, {focus:true});
+  if (document.activeElement === canvas) showPeek(next);
+}
+canvas.addEventListener('keydown', e => {
+  touchInteract();
+  const step = e.shiftKey ? .4 : .15;
+  const rot = {ArrowLeft:[-step,0], ArrowRight:[step,0], ArrowUp:[0,-step], ArrowDown:[0,step]}[e.key];
+  if (rot){ e.preventDefault(); target.yaw += rot[0]; target.pitch = clamp(target.pitch + rot[1], -PITCH_MAX, PITCH_MAX); requestFrame(); return; }
+  if (e.key === '+' || e.key === '='){ e.preventDefault(); zoomBy(1.18); }
+  else if (e.key === '-' || e.key === '_'){ e.preventDefault(); zoomBy(1/1.18); }
+  else if (e.key === '0'){ e.preventDefault(); resetView(); }
+  else if (e.key === ']' || e.key === '.'){ e.preventDefault(); stepStar(1); }
+  else if (e.key === '[' || e.key === ','){ e.preventDefault(); stepStar(-1); }
+  else if (e.key === 'Enter' || e.key === ' '){
+    e.preventDefault(); const s = selected(); if (!s){ stepStar(1); return; }
+    hidePeek();
+    if (isMobile()) openSheet('detail'); else $('detail').querySelector('button')?.focus();
+  }
+});
+canvas.addEventListener('blur', () => hidePeek());
+canvas.addEventListener('focus', () => { const s = selected(); canvas.setAttribute('aria-label', '三维记忆星图' + (s ? `，当前：${s.title}，${s.lunar.text}` : '')); });
+$('zoomIn').onclick = () => zoomBy(1.18);
+$('zoomOut').onclick = () => zoomBy(1/1.18);
+$('resetView').onclick = () => resetView();
+function randomStar(){
+  const pool = mine.length > 1 ? mine : allItems();
+  const cand = pool.filter(m => m.id !== selectedId);
+  const list = cand.length ? cand : pool;
+  if (list.length) choose(list[Math.floor(Math.random()*list.length)], {focus:true, open:true, fly:true});
+}
+$('randomBtn').onclick = randomStar; $('dockRandom').onclick = randomStar;
+
+/* ---------- form: add / edit ---------- */
+let picture = null, editing = null, stream = null, camAttempt = 0, fileAttempt = 0, dateMode = 'solar', draftTimer;
+function showIssue(msg){ $('issue').hidden = !msg; $('issue').textContent = msg || ''; }
+function setPicture(blob){
+  picture = blob || null;
+  const img = $('photoPreview');
+  if (img.dataset.url) URL.revokeObjectURL(img.dataset.url);
+  const url = blob ? URL.createObjectURL(blob) : '';
+  img.dataset.url = url; url ? img.src = url : img.removeAttribute('src'); img.hidden = !url;
+  $('dropText').textContent = blob ? '已选好照片。可以替换：' : '拖入一张照片，或：';
+}
+function stopCamera(){ camAttempt++; stream?.getTracks().forEach(t => t.stop()); stream = null; $('video').srcObject = null; $('video').hidden = true; $('snapBtn').hidden = true; }
+function setDateMode(mode){
+  dateMode = mode;
+  $('modeSolar').setAttribute('aria-pressed', String(mode === 'solar')); $('modeLunar').setAttribute('aria-pressed', String(mode === 'lunar'));
+  $('dateInput').hidden = mode !== 'solar'; $('lunarSel').hidden = mode !== 'lunar';
+  if (mode === 'lunar') syncLunarSelects($('dateInput').value);
+  placeLenses();
+}
+function fillSelect(sel, entries, value){ sel.replaceChildren(...entries.map(([v, label]) => { const o = el('option', '', label); o.value = v; return o; })); if (value !== undefined) sel.value = String(value); }
+(() => { const years = []; for (let y = 1901; y <= 2099; y++){ const c = ((y-4)%60+60)%60; years.push([y, `${y} · ${STEMS[c%10]}${BRANCHES[c%12]}年（${ZODIAC[c%12]}）`]); } fillSelect($('lyYear'), years); })();
+function syncLunarSelects(iso){
+  const l = lunarDate(iso); if (!l) return;
+  $('lyYear').value = String(l.year);
+  const table = lunarYearTable(l.year);
+  fillSelect($('lyMonth'), [...table].map(([k, v]) => [k, v.label]), l.month + (l.leap ? 'L' : ''));
+  const days = table.get($('lyMonth').value)?.days || new Map();
+  fillSelect($('lyDay'), [...days.keys()].map(d => [d, lunarDate(days.get(d)).dayName]), l.day);
+}
+function lunarPicked(changed){
+  const Y = +$('lyYear').value, table = lunarYearTable(Y);
+  let mk = $('lyMonth').value;
+  if (changed === 'year'){ if (!table.has(mk)) mk = table.has(mk.replace('L','')) ? mk.replace('L','') : [...table.keys()][0]; }
+  const month = table.get(mk); if (!month) return;
+  let day = +$('lyDay').value; if (!month.days.has(day)) day = Math.max(...[...month.days.keys()].filter(d => d <= day), 1);
+  const iso = month.days.get(day) || [...month.days.values()].pop();
+  if (iso) setFormDate(iso);
+}
+$('lyYear').onchange = () => lunarPicked('year'); $('lyMonth').onchange = () => lunarPicked('month'); $('lyDay').onchange = () => lunarPicked('day');
+$('modeSolar').onclick = () => setDateMode('solar'); $('modeLunar').onclick = () => setDateMode('lunar');
+function setFormDate(iso){ $('dateInput').value = iso; if (dateMode === 'lunar') syncLunarSelects(iso); updateConvert(); saveDraft(); }
+function updateConvert(){
+  const iso = $('dateInput').value, l = lunarDate(iso), box = $('convert');
+  box.replaceChildren();
+  if (!l){ box.textContent = '请选择 1901 至 2099 年之间的日期。'; return; }
+  box.append('公历 ', el('b','', solarText(iso)), el('br'), '农历 ', el('b','', `${l.yearName}年（${l.zodiac}）${l.monthName}${l.dayName}`), ` · 落在${l.sector.name}天区（${l.sector.dir}方·${l.sector.season}）`);
+}
+$('dateInput').addEventListener('input', () => { updateConvert(); saveDraft(); });
+function updateHints(){
+  const ch = $('cameraHint');
+  if (Native){ ch.hidden = true; }
+  else if (!env.camera){ ch.hidden = false; ch.textContent = '当前预览不允许网页直接打开相机：点「拍照」会改用系统相机（手机）或文件选择，也可以从相册导入。'; }
+  else ch.hidden = true;
+  const sh = $('saveHint');
+  if (env.persist === false){ sh.hidden = false; sh.className = 'hint warn'; sh.textContent = '此环境无法长期保存照片：收藏只保留到关闭页面，请记得在「数据」中导出备份。'; }
+  else if (env.persist === null){ sh.hidden = false; sh.className = 'hint'; sh.textContent = '正在连接本机存储…'; }
+  else sh.hidden = true;
+}
+function openForm(item, draft, originEl){
+  formOrigin = originEl || document.activeElement?.closest?.('button') || null;
+  editing = item && !item.demo ? item : null;
+  $('memoryForm').reset(); showIssue(''); stopCamera();
+  $('formTitle').textContent = editing ? '编辑回忆' : '收藏一刻';
+  $('saveBtn').textContent = editing ? '保存修改' : '收进星图';
+  setPicture(editing ? editing.blob : null);
+  $('titleInput').value = editing?.title || ''; $('noteInput').value = editing?.note || '';
+  const iso = editing?.date || isoDate();
+  if (draft){ $('titleInput').value = draft.title || ''; $('noteInput').value = draft.note || ''; }
+  setDateMode('solar'); setFormDate(validIso(draft?.date) ? draft.date : iso);
+  updateHints();
+  const dlg = $('formDialog');
+  if (!dlg.open) dlg.showModal();
+  expandDialog(dlg, formOrigin);
+  placeLenses();
+  if (!draft) saveDraft();
+}
+function saveDraft(){
+  if (!$('formDialog').open) return;
+  clearTimeout(draftTimer);
+  draftTimer = setTimeout(() => ls.set(DRAFT_KEY, {open:true, editId:editing?.id || null, title:$('titleInput').value, note:$('noteInput').value, date:$('dateInput').value, hasPhoto:!!picture && picture !== editing?.blob}), 300);
+}
+async function saveDraftPhoto(blob){ if (!db) return; try{ await idb('drafts','readwrite', s => blob ? s.put({id:'current', blob}) : s.delete('current')); }catch{} }
+function clearDraft(){ clearTimeout(draftTimer); ls.del(DRAFT_KEY); saveDraftPhoto(null); }
+$('titleInput').addEventListener('input', saveDraft); $('noteInput').addEventListener('input', saveDraft);
+function closeForm(){ clearDraft(); collapseDialog($('formDialog'), formOrigin); }
+$('formClose').onclick = closeForm; $('formCancel').onclick = closeForm;
+$('formDialog').addEventListener('cancel', e => { e.preventDefault(); closeForm(); });
+$('formDialog').addEventListener('close', () => { fileAttempt++; stopCamera(); setPicture(null); editing = null; });
+function jpgDate(buffer){
+  const view = new DataView(buffer);
+  if (view.byteLength < 4 || view.getUint16(0) !== 0xffd8) return null;
+  let cur = 2;
+  while (cur + 4 < view.byteLength && view.getUint8(cur) === 255){
+    const marker = view.getUint16(cur), size = view.getUint16(cur + 2);
+    if (size < 2 || cur + 2 + size > view.byteLength || marker === 0xffda) break;
+    const end = cur + 2 + size;
+    if (marker === 0xffe1 && size >= 16 && view.getUint32(cur + 4) === 0x45786966 && view.getUint16(cur + 8) === 0){
+      const base = cur + 10, order = view.getUint16(base), little = order === 0x4949;
+      if ((!little && order !== 0x4d4d) || view.getUint16(base + 2, little) !== 42) break;
+      const find = (off, tag) => { const st = base + off; if (st < base || st + 2 > end) return null; const n = view.getUint16(st, little); for (let i = 0; i < n; i++){ const e = st + 2 + i*12; if (e + 12 > end) break; if (view.getUint16(e, little) === tag) return {type:view.getUint16(e+2, little), count:view.getUint32(e+4, little), offset:view.getUint32(e+8, little)}; } return null; };
+      const ifd0 = view.getUint32(base + 4, little), exif = find(ifd0, 0x8769);
+      const tag = (exif?.type === 4 ? find(exif.offset, 0x9003) : null) || find(ifd0, 0x0132);
+      if (tag?.type === 2 && tag.count >= 19 && base + tag.offset + 19 <= end){
+        const iso = new TextDecoder().decode(new Uint8Array(buffer, base + tag.offset, 19)).slice(0,10).replaceAll(':','-');
+        if (validIso(iso) && lunarDate(iso)) return iso;
+      }
+    }
+    cur = end;
+  }
+  return null;
+}
+function encodePhoto(src, w, h){
+  const k = Math.min(1, 1600 / Math.max(w, h));
+  const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(w*k)); c.height = Math.max(1, Math.round(h*k));
+  const g = c.getContext('2d'); g.fillStyle = '#111624'; g.fillRect(0, 0, c.width, c.height); g.drawImage(src, 0, 0, c.width, c.height);
+  return new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error('encode')), 'image/jpeg', .86));
+}
+async function acceptFile(file, readDate){
+  if (!file) return;
+  if (!/^image\//.test(file.type) && !/\.(jpe?g|png|webp|gif|heic|heif|avif)$/i.test(file.name)){ showIssue('这不是图片文件，请选择 JPEG、PNG、WebP 或 HEIC 照片。'); return; }
+  if (file.size > 60*1024*1024){ showIssue('这张照片超过 60 MB，太大了，请换一张或先压缩。'); return; }
+  stopCamera(); showIssue('');
+  const attempt = ++fileAttempt; const url = URL.createObjectURL(file);
+  try{
+    const img = new Image(); img.src = url; await img.decode();
+    const blob = await encodePhoto(img, img.naturalWidth, img.naturalHeight);
+    const exifDate = readDate ? jpgDate(await file.slice(0, 262144).arrayBuffer()) : null;
+    if (attempt !== fileAttempt || !$('formDialog').open) return;
+    setPicture(blob); saveDraftPhoto(blob); saveDraft();
+    if (exifDate){ setFormDate(exifDate); notify('已按照片拍摄日期填写：' + solarText(exifDate)); }
+  }catch{ if (attempt === fileAttempt) showIssue('无法读取这张照片（格式可能不受此浏览器支持），请试试 JPEG、PNG 或 WebP。'); }
+  finally{ URL.revokeObjectURL(url); }
+}
+function b64ToBlob(b64, type){ const bin = atob(b64); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new Blob([u], {type}); }
+async function nativePhoto(action){
+  try{
+    const r = await Native.call(action);
+    if (!r?.base64) return;
+    const blob = b64ToBlob(r.base64, 'image/jpeg');
+    setPicture(blob); saveDraftPhoto(blob); saveDraft();
+    if (validIso(r.date) && lunarDate(r.date)){ setFormDate(r.date); notify('已按照片拍摄日期填写：' + solarText(r.date)); }
+  }catch(e){ if (e.code !== 'cancelled') showIssue(action === 'takePhoto' ? '无法打开相机：' + e.message : '无法读取照片：' + e.message); }
+}
+$('pickBtn').onclick = () => { if (Native) nativePhoto('pickPhoto'); else $('fileInput').click(); };
+$('fileInput').onchange = () => { const f = $('fileInput').files[0]; $('fileInput').value = ''; acceptFile(f, true); };
+$('captureInput').onchange = () => { const f = $('captureInput').files[0]; $('captureInput').value = ''; acceptFile(f, false); };
+$('cameraBtn').onclick = async () => {
+  if (Native){ nativePhoto('takePhoto'); return; }
+  fileAttempt++; stopCamera(); showIssue('');
+  if (!env.camera){ $('captureInput').click(); return; }
+  const attempt = ++camAttempt;
+  try{
+    const s = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}, audio:false});
+    if (attempt !== camAttempt || !$('formDialog').open){ s.getTracks().forEach(t => t.stop()); return; }
+    stream = s; $('video').srcObject = s; await $('video').play();
+    if (attempt !== camAttempt) return;
+    $('photoPreview').hidden = true; $('video').hidden = false; $('snapBtn').hidden = false; $('snapBtn').focus();
+  }catch{
+    if (attempt !== camAttempt) return;
+    stopCamera(); $('photoPreview').hidden = !picture; env.camera = false; updateHints();
+    showIssue('相机权限未获允许。再点一次「拍照」会改用系统相机或文件选择。');
+  }
+};
+$('snapBtn').onclick = async () => {
+  const v = $('video'); if (!v.videoWidth) return; const attempt = camAttempt;
+  try{ const b = await encodePhoto(v, v.videoWidth, v.videoHeight); if (attempt !== camAttempt) return; stopCamera(); setPicture(b); saveDraftPhoto(b); setFormDate(isoDate()); }
+  catch{ showIssue('拍照失败，请重试。'); }
+};
+{
+  const drop = $('drop');
+  ['dragenter','dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave','drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', e => acceptFile(e.dataTransfer.files[0], true));
+  document.addEventListener('dragover', e => { if ([...(e.dataTransfer?.types || [])].includes('Files')) e.preventDefault(); });
+  document.addEventListener('drop', e => { if (e.target.closest('#drop')) return; const f = e.dataTransfer?.files?.[0]; if (!f) return; e.preventDefault(); if (!$('formDialog').open) openForm(null); acceptFile(f, true); });
+}
+async function persistItem(item){
+  if (env.persist && db){ await idb('memories','readwrite', s => s.put(rawOf(item))); item.temp = false; }
+  else item.temp = true;
+}
+$('memoryForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  if ($('saveBtn').disabled) return;
+  showIssue('');
+  const date = $('dateInput').value, lunar = lunarDate(date);
+  if (!picture){ showIssue('请先拍照或从相册导入一张照片。'); $('pickBtn').focus(); return; }
+  if (!lunar){ showIssue('请选择 1901 至 2099 年之间的有效日期。'); return; }
+  const now = new Date().toISOString();
+  const title = $('titleInput').value.trim() || lunar.monthName + lunar.dayName + '的记忆';
+  const raw = editing ? {...rawOf(editing), date, title, note:$('noteInput').value.trim(), blob:picture, updatedAt:now}
+    : {id:crypto.randomUUID?.() || Date.now() + '-' + Math.random().toString(36).slice(2), slot:freeSlot(), date, title, note:$('noteInput').value.trim(), blob:picture, createdAt:now, updatedAt:now};
+  const item = prepare(raw);
+  $('saveBtn').disabled = true;
+  try{
+    await persistItem(item);
+  }catch(err){ showIssue(saveError(err)); $('saveBtn').disabled = false; return; }
+  const fromRect = visibleImageRect($('photoPreview'));
+  if (editing){ dropUrl(editing.id); mine = mine.map(m => m.id === item.id ? item : m); } else mine.push(item);
+  const wasEdit = !!editing;
+  $('saveBtn').disabled = false; clearDraft();
+  const dlg = $('formDialog'); formAnimToken++; dlg.getAnimations().forEach(a => a.cancel()); dlg.close();
+  if (ui.page !== 'atlas') setPage('atlas');
+  if (ui.mode !== 'mine') setMode('mine', {keepSelection:true});
+  if (isMobile()) closeSheet(true);
+  igniting.add(item.id);
+  choose(item, {focus:true});
+  flyToStar(item, fromRect);
+  notify(item.temp ? '已放进星图，但此环境无法长期保存——记得导出备份' : wasEdit ? '修改已保存，照片回到了星位' : '这一刻已收进星图', isMobile() ? {label:'查看', run:() => choose(byId(item.id), {open:true, fly:true})} : null);
+  updateStorage();
+});
+
+/* ---------- delete with undo ---------- */
+let pendingDelete = null;
+function askDelete(item){ pendingDelete = item; $('confirmText').textContent = `「${item.title}」（${item.lunar.text}）和它的照片会从本机删除。删除后几秒内可以撤销。`; $('confirmDialog').showModal(); }
+$('confirmNo').onclick = () => $('confirmDialog').close();
+$('confirmYes').onclick = async () => {
+  const item = pendingDelete; $('confirmDialog').close(); if (!item) return;
+  try{ if (!item.temp && db) await idb('memories','readwrite', s => s.delete(item.id)); }
+  catch(err){ notify('删除失败：' + (err?.name || '未知错误')); return; }
+  mine = mine.filter(m => m.id !== item.id);
+  if (selectedId === item.id) selectedId = null;
+  renderAll(); updateStorage();
+  notify(`已删除「${item.title}」`, {label:'撤销', run: async () => {
+    if (!validSlot(item.slot) || slotTaken(item.slot, item.id)){ item.slot = freeSlot(item.id); item.position = slotVector(item.slot); }
+    try{ await persistItem(item); }catch(err){ notify(saveError(err)); return; }
+    mine.push(item); choose(item, {focus:true}); notify('已恢复，星星回到了原来的位置');
+  }});
+};
+
+/* ---------- storage status ---------- */
+const mb = n => n < 1048576 ? Math.max(1, Math.round(n / 1024)) + ' KB' : (n / 1048576).toFixed(n < 10485760 ? 1 : 0) + ' MB';
+async function updateStorage(){
+  const photoBytes = mine.reduce((s, m) => s + (m.blob?.size || 0), 0);
+  let status, detail = `${mine.length} 段回忆，照片约 ${mb(photoBytes)}。`, pct = 0;
+  if (env.persist === false) status = Native ? '无法打开本机存储，新收藏只保留到关闭 App。' : '此环境无法使用本机存储（预览限制或隐私模式），新收藏只保留到关闭页面。请用「导出备份」保存。';
+  else if (env.persist === null) status = '正在连接本机存储…';
+  else status = Native ? '照片保存在本 App 内，卸载 App 会一并删除，建议定期导出备份。' : '照片保存在当前浏览器的本机存储里，不会上传。换浏览器或清理网站数据会丢失，建议定期导出备份。';
+  try{
+    const est = await navigator.storage?.estimate?.();
+    if (est?.quota){ pct = est.usage / est.quota; detail += ` 本站已用 ${mb(est.usage)}，剩余约 ${mb(Math.max(0, est.quota - est.usage))}。`; if (pct > .8) detail += ' 空间快满了，新照片可能无法保存。'; }
+  }catch{}
+  let persisted = false;
+  try{ persisted = !!(await navigator.storage?.persisted?.()); }catch{}
+  $('persistBtn').hidden = !(env.persist && navigator.storage?.persist && !persisted && !Native);
+  if (persisted) detail += ' 已获浏览器长期保存许可。';
+  $('storeStatus').textContent = status; $('storeDetail').textContent = detail;
+  $('meterBar').style.width = Math.round(clamp(pct, 0, 1) * 100) + '%';
+}
+$('persistBtn').onclick = async () => { try{ const ok = await navigator.storage.persist(); notify(ok ? '浏览器已同意长期保存' : '浏览器暂未同意，常用此页面后可再试'); }catch{ notify('此环境不支持申请长期保存'); } updateStorage(); };
+
+/* ---------- backup / restore ---------- */
+function blobToDataURL(b){ return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(r.error); r.readAsDataURL(b); }); }
+async function exportBackup(){
+  const hint = $('backupHint');
+  if (!mine.length){ hint.textContent = '还没有自己的回忆可以备份（示例不会导出）。'; return; }
+  $('exportBtn').disabled = true; hint.textContent = '正在打包照片…';
+  try{
+    const memories = [];
+    for (const m of sorted(mine)) memories.push({id:m.id, slot:m.slot, date:m.date, title:m.title, note:m.note || '', createdAt:m.createdAt, updatedAt:m.updatedAt, image:await blobToDataURL(m.blob)});
+    const text = JSON.stringify({app:'xingcang-lunar-atlas', format:2, exportedAt:new Date().toISOString(), count:memories.length, memories});
+    const name = `星藏备份-${isoDate()}.json`;
+    if (Native){ await Native.call('shareBackup', {filename:name, text}); hint.textContent = '已打开系统分享面板，可存到「文件」、隔空投送或发给自己。'; return; }
+    if (downloadsApi){
+      try{ await downloadsApi.save({filename:name, data:new Blob([text], {type:'application/json'})}); hint.textContent = `已导出 ${memories.length} 段回忆（${mb(text.length)}）。`; return; }
+      catch(err){ if (err?.code === 'declined'){ hint.textContent = '已取消导出。'; return; } if (err?.code === 'rate_limited'){ hint.textContent = '已有一个保存确认在等待，请先处理它。'; return; } }
+    }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type:'application/json'})); a.download = name; document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    hint.textContent = `已请求下载 ${name}。若没有出现下载，请检查浏览器的下载设置。`;
+  }catch(err){ hint.textContent = (err?.code === 'cancelled') ? '已取消导出。' : '导出失败：' + (err?.message || err?.name || '未知错误'); }
+  finally{ $('exportBtn').disabled = false; }
+}
+async function restoreText(text){
+  const hint = $('backupHint');
+  let data; try{ data = JSON.parse(text); }catch{ hint.textContent = '这不是有效的星藏备份文件（JSON 解析失败）。'; return; }
+  const list = Array.isArray(data) ? data : data?.memories;
+  if (!Array.isArray(list)){ hint.textContent = '文件里没有找到回忆列表，可能不是星藏备份。'; return; }
+  let added = 0, updated = 0, skipped = 0, bad = 0, failed = 0, lastErr = null;
+  for (const e of list){
+    const m = /^data:(image\/[\w.+-]+);base64,(.+)$/.exec(e?.image || '');
+    if (!e || typeof e.id !== 'string' || !validIso(e.date) || !lunarDate(e.date) || !m){ bad++; continue; }
+    const existing = mine.find(x => x.id === e.id);
+    if (existing && (existing.updatedAt || '') >= (e.updatedAt || '')){ skipped++; continue; }
+    let blob; try{ blob = b64ToBlob(m[2], m[1]); }catch{ bad++; continue; }
+    const slot = existing ? existing.slot : (validSlot(e.slot) && !slotTaken(e.slot, e.id) ? e.slot : freeSlot());
+    const item = prepare({id:e.id, slot, date:e.date, title:String(e.title || '').slice(0, 70) || '未命名回忆', note:String(e.note || '').slice(0, 1000), blob, createdAt:e.createdAt || null, updatedAt:e.updatedAt || null});
+    try{ await persistItem(item); }catch(err){ failed++; lastErr = err; continue; }
+    if (existing){ dropUrl(existing.id); mine = mine.map(x => x.id === item.id ? item : x); updated++; } else { mine.push(item); added++; }
+  }
+  renderAll(); updateStorage();
+  hint.textContent = `恢复完成：新增 ${added}，更新 ${updated}，已存在 ${skipped}` + (bad ? `，无法识别 ${bad}` : '') + (failed ? `，保存失败 ${failed}（${saveError(lastErr)}）` : '') + (env.persist === false && (added + updated) ? '。注意：此环境无法长期保存。' : '。');
+  if (added + updated){ const first = mine[mine.length - 1]; choose(first, {focus:true}); }
+}
+$('exportBtn').onclick = exportBackup;
+$('importBtn').onclick = async () => {
+  if (Native){ try{ const r = await Native.call('importBackup'); if (r?.text) restoreText(r.text); }catch(e){ if (e.code !== 'cancelled') $('backupHint').textContent = '无法读取备份：' + e.message; } return; }
+  $('importInput').click();
+};
+$('importInput').onchange = async () => { const f = $('importInput').files[0]; $('importInput').value = ''; if (!f) return; $('backupHint').textContent = '正在读取备份…'; try{ restoreText(await f.text()); }catch{ $('backupHint').textContent = '无法读取这个文件。'; } };
+
+/* ---------- data dialog & settings ---------- */
+function openData(focusKeys){ $('demoToggle').checked = ui.mode === 'demo'; $('motionToggle').checked = ui.reduceMotion; const origin = document.activeElement?.closest?.('button'); updateStorage(); $('dataDialog').showModal(); expandDialog($('dataDialog'), origin); if (focusKeys) $('keysSection').scrollIntoView({block:'start'}); }
+$('dataOpen').onclick = () => openData(); $('dockData').onclick = () => { closeSheet(); openData(); };
+$('aboutLink').onclick = () => openData(true);
+$('dataClose').onclick = () => collapseDialog($('dataDialog'), null);
+$('dataDialog').addEventListener('cancel', e => { e.preventDefault(); collapseDialog($('dataDialog'), null); });
+$('skyArchive').onclick = () => setPage('archive');
+$('demoToggle').onchange = () => setMode($('demoToggle').checked ? 'demo' : 'mine');
+$('motionToggle').onchange = () => { ui.reduceMotion = $('motionToggle').checked; saveUI(); applyMotion(); };
+mqReduce.addEventListener?.('change', applyMotion);
+mqMobile.addEventListener?.('change', () => { closeSheet(); resize(); });
+for (const c of document.querySelectorAll('[data-mode]')) c.addEventListener('click', () => setMode(c.dataset.mode));
+for (const b of document.querySelectorAll('[data-mode-go]')) b.addEventListener('click', () => setMode(b.dataset.modeGo));
+for (const b of document.querySelectorAll('[data-new]')) b.addEventListener('click', () => openForm(null));
+$('newBtn').onclick = () => openForm(null); $('dockNew').onclick = () => { closeSheet(); openForm(null); };
+$('dockList').onclick = () => { if ($('side').classList.contains('open') && $('side').dataset.view === 'list') closeSheet(); else openSheet('list'); };
+$('atlasTab').onclick = () => setPage('atlas'); $('archiveTab').onclick = () => setPage('archive');
+document.addEventListener('keydown', e => {
+  if (document.querySelector('dialog[open]') || e.target.matches('input,textarea,select,[contenteditable]') || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === '/'){ e.preventDefault(); if (isMobile()){ document.body.classList.add('searching'); $('dockSearch').setAttribute('aria-pressed','true'); } $('search').focus(); }
+  else if (e.key === 'n' || e.key === 'N'){ e.preventDefault(); openForm(null); }
+  else if (e.key === 'r' || e.key === 'R'){ e.preventDefault(); randomStar(); }
+  else if (e.key === 'e' || e.key === 'E'){ const s = selected(); if (s && !s.demo){ e.preventDefault(); openForm(s); } }
+  else if (e.key === '?'){ e.preventDefault(); openData(true); }
+  else if (e.key === 'Escape'){ closeSearch(); if ($('side').classList.contains('open')) dismissSheet(); }
+});
+
+
+/* ---------- Liquid Glass motion ---------- */
+const motionOK = () => !reduced() && typeof Element.prototype.animate === 'function';
+const igniting = new Set();
+let archiveStagger = false, pageReady = false, formOrigin = null, flyToken = 0, formAnimToken = 0;
+const FLY_EASE = 'cubic-bezier(.2,.85,.25,1)';
+function screenOf(item, v){
+  if (!W || !H || ui.page !== 'atlas') return null;
+  const c = Math.cos(v.yaw), s = Math.sin(v.yaw), cP = Math.cos(v.pitch), sP = Math.sin(v.pitch), o = item.position;
+  const x = o.x*c - o.z*s, z = o.x*s + o.z*c, vv = o.y*cP - z*sP, depth = o.y*sP + z*cP, dist = 4.15 - depth;
+  if (dist < .35) return null;
+  const k = 4.15/dist, sc = Math.min(W, H)*.38*v.zoom, px = W*.5 + x*sc*k, py = H*.52 - vv*sc*k;
+  if (px < 0 || py < 0 || px > W || py > H) return null;
+  const r = canvas.getBoundingClientRect();
+  return {x:r.left + px, y:r.top + py};
+}
+function toPoint(rect, pt, size = 14){
+  const dx = pt.x - (rect.left + rect.width/2), dy = pt.y - (rect.top + rect.height/2);
+  return `translate(${dx.toFixed(1)}px,${dy.toFixed(1)}px) scale(${(size/rect.width).toFixed(4)},${(size/rect.height).toFixed(4)})`;
+}
+function makeFlyer(url, rect){
+  const f = document.createElement('div'); f.className = 'flyer'; f.setAttribute('aria-hidden','true');
+  Object.assign(f.style, {left:rect.left + 'px', top:rect.top + 'px', width:rect.width + 'px', height:rect.height + 'px', backgroundImage:`url("${url}")`});
+  document.body.append(f); return f;
+}
+function clearFlyers(){
+  for (const f of document.querySelectorAll('.flyer:not(.ignite)')){ f.getAnimations().forEach(a => a.cancel()); f.remove(); }
+  for (const p of document.querySelectorAll('.photo.awaiting')) p.classList.remove('awaiting');
+}
+function visibleImageRect(img){
+  if (!img || img.hidden) return null;
+  const r = img.getBoundingClientRect(); if (!r.width || !r.height) return null;
+  const nw = img.naturalWidth, nh = img.naturalHeight; if (!nw || !nh) return r;
+  const k = Math.min(r.width/nw, r.height/nh), w = nw*k, h = nh*k;
+  return {left:r.left + (r.width - w)/2, top:r.top + (r.height - h)/2, width:w, height:h};
+}
+async function flyOpen(item, from){
+  const token = ++flyToken; clearFlyers();
+  if (!motionOK() || !from) return;
+  const photo = $('detail').querySelector('.photo'); if (!photo) return;
+  const rect = photo.getBoundingClientRect();
+  if (!rect.width || rect.bottom < 0 || rect.top > innerHeight) return;
+  photo.classList.add('awaiting');
+  const f = makeFlyer(imageUrl(item), rect);
+  const a = f.animate([
+    {transform:toPoint(rect, from), borderRadius:'50%', filter:'brightness(2.4) saturate(.45)', opacity:.9},
+    {transform:'none', borderRadius:'4px', filter:'none', opacity:1}
+  ], {duration:580, easing:FLY_EASE});
+  try{ await a.finished; }catch{}
+  if (token !== flyToken){ f.remove(); return; }
+  photo.classList.remove('awaiting');
+  f.animate([{opacity:1},{opacity:0}], {duration:180}).finished.then(() => f.remove(), () => f.remove());
+}
+async function flyClose(){
+  const token = ++flyToken; clearFlyers();
+  const s = selected(), mobile = isMobile(), side = $('side');
+  const finish = () => {
+    if (token !== flyToken) return;
+    if (mobile) closeSheet(true);
+    else { selectedId = null; ui.selectedId = null; saveUI(); renderDetail(); renderList(); requestFrame(); }
+  };
+  const photo = $('detail').querySelector('.photo');
+  const to = s ? screenOf(s, target) : null;
+  const rect = photo?.getBoundingClientRect();
+  if (!motionOK() || !s || !to || !rect || !rect.width){ finish(); return; }
+  photo.classList.add('awaiting');
+  const f = makeFlyer(imageUrl(s), rect);
+  side.getAnimations().forEach(a => a.cancel());
+  const fade = (mobile ? side : $('detail')).animate([{opacity:1},{opacity:mobile ? 0 : .3}], {duration:280, easing:'ease-in', fill:'forwards'});
+  const a = f.animate([
+    {transform:'none', borderRadius:'4px', filter:'none', opacity:1},
+    {transform:toPoint(rect, to, 10), borderRadius:'50%', filter:'brightness(2.8) saturate(.4)', opacity:.15}
+  ], {duration:520, easing:'cubic-bezier(.55,0,.3,1)'});
+  try{ await a.finished; }catch{}
+  f.remove();
+  if (token === flyToken){ focusAt = performance.now(); requestFrame(); finish(); }
+  else photo.classList.remove('awaiting');
+  fade.cancel();
+}
+async function flyToStar(item, rect){
+  const to = rect ? screenOf(item, target) : null;
+  if (!motionOK() || !rect || !to){ igniting.delete(item.id); focusAt = performance.now(); requestFrame(); return; }
+  const f = makeFlyer(imageUrl(item), rect); f.classList.add('ignite');
+  const dx = to.x - (rect.left + rect.width/2), dy = to.y - (rect.top + rect.height/2), end = toPoint(rect, to, 12);
+  const a = f.animate([
+    {transform:'translate(0px,0px) scale(1,1) rotate(0deg)', borderRadius:'10px', filter:'brightness(1) saturate(1)', opacity:1, offset:0},
+    {transform:`translate(${(dx*.3).toFixed(1)}px,${(dy*.3 - 70).toFixed(1)}px) scale(.42,.42) rotate(-5deg)`, borderRadius:'22px', filter:'brightness(1.25) saturate(1)', opacity:1, offset:.42},
+    {transform:end + ' rotate(0deg)', borderRadius:'50%', filter:'brightness(3) saturate(.3)', opacity:1, offset:.88},
+    {transform:end + ' rotate(0deg) scale(.25)', borderRadius:'50%', filter:'brightness(4) saturate(0)', opacity:0, offset:1}
+  ], {duration:1040, easing:'cubic-bezier(.45,.05,.3,1)'});
+  try{ await a.finished; }catch{}
+  f.remove(); igniting.delete(item.id); focusAt = performance.now(); requestFrame();
+}
+function dialogKids(dlg){ return [...(dlg.querySelector('form') || dlg).children].filter(n => !n.hidden).slice(0, 10); }
+function originTransform(dlg, origin, fallback){
+  const r = dlg.getBoundingClientRect(), o = origin?.isConnected ? origin.getBoundingClientRect() : null;
+  if (o && o.width && o.height && r.width && r.height){
+    const dx = (o.left + o.width/2) - (r.left + r.width/2), dy = (o.top + o.height/2) - (r.top + r.height/2);
+    return {transform:`translate(${dx.toFixed(1)}px,${dy.toFixed(1)}px) scale(${Math.max(o.width/r.width, .04).toFixed(4)},${Math.max(o.height/r.height, .04).toFixed(4)})`, borderRadius:'999px', opacity:fallback ? 0 : .55};
+  }
+  return {transform:'translateY(18px) scale(.97)', opacity:0};
+}
+function expandDialog(dlg, origin){
+  formAnimToken++;
+  dlg.getAnimations().forEach(a => a.cancel());
+  for (const k of dialogKids(dlg)) k.getAnimations().forEach(a => a.cancel());
+  if (!motionOK()) return;
+  const radius = getComputedStyle(dlg).borderRadius;
+  dlg.animate([originTransform(dlg, origin), {transform:'none', borderRadius:radius, opacity:1}], {duration:480, easing:'cubic-bezier(.2,.9,.25,1)'});
+  dialogKids(dlg).forEach((k, i) => k.animate([{opacity:0, transform:'translateY(10px)'},{opacity:1, transform:'none'}], {duration:320, delay:150 + i*45, easing:'ease-out', fill:'backwards'}));
+  try{ dlg.animate([{opacity:0},{opacity:1}], {duration:320, pseudoElement:'::backdrop'}); }catch{}
+}
+async function collapseDialog(dlg, origin){
+  if (!dlg.open) return;
+  const token = ++formAnimToken;
+  if (!motionOK()){ dlg.close(); return; }
+  dlg.getAnimations().forEach(a => a.cancel());
+  const a = dlg.animate([{transform:'none', opacity:1}, originTransform(dlg, origin, true)], {duration:300, easing:'cubic-bezier(.4,0,.7,.2)', fill:'forwards'});
+  try{ dlg.animate([{opacity:1},{opacity:0}], {duration:300, pseudoElement:'::backdrop', fill:'forwards'}); }catch{}
+  try{ await a.finished; }catch{ return; }
+  if (token === formAnimToken && dlg.open) dlg.close();
+  dlg.getAnimations().forEach(x => x.cancel());
+}
+function placeLens(g){
+  const lens = g.querySelector(':scope > .lens'); if (!lens) return;
+  const act = g.querySelector(':scope > [aria-current=page], :scope > [aria-pressed=true]');
+  if (!act || !g.offsetWidth){ lens.style.opacity = '0'; return; }
+  const lh = +g.dataset.lensH || act.offsetHeight;
+  lens.style.width = act.offsetWidth + 'px'; lens.style.height = lh + 'px';
+  lens.style.transform = `translate(${act.offsetLeft}px,${act.offsetTop + (act.offsetHeight - lh)/2}px)`;
+  lens.style.opacity = '1';
+  if (!g.classList.contains('ready')) requestAnimationFrame(() => requestAnimationFrame(() => g.classList.add('ready')));
+}
+function placeLenses(){ document.querySelectorAll('.lensGroup').forEach(placeLens); }
+{
+  const ro = new ResizeObserver(() => placeLenses());
+  document.querySelectorAll('.lensGroup').forEach(g => ro.observe(g));
+  document.fonts?.ready?.then(placeLenses);
+  const root = document.documentElement; let px = 0, py = 0, raf = 0;
+  document.addEventListener('pointermove', e => {
+    if (e.pointerType !== 'mouse' || reduced()) return;
+    px = e.clientX; py = e.clientY; if (raf) return;
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      const nx = px/innerWidth*2 - 1, ny = py/innerHeight*2 - 1;
+      const vx = clamp(.55 - nx*.9, -1.3, 1.3), vy = clamp(.75 - ny*.7, -1.3, 1.3);
+      root.style.setProperty('--lx', vx.toFixed(2)); root.style.setProperty('--ly', vy.toFixed(2));
+      root.style.setProperty('--la', (Math.atan2(vx, -vy)*180/Math.PI).toFixed(1) + 'deg');
+    });
+  }, {passive:true});
+}
+
+
+
+/* ---------- v11 celestial sky: a true 3D sphere that turns with the map (same yaw/pitch), inert ---------- */
+const XIU_GROUPS = ['东方 · 青龙','北方 · 玄武','西方 · 白虎','南方 · 朱雀'];
+/* 东方青龙 jade · 北方玄武 amethyst · 西方白虎 moon silver · 南方朱雀 cinnabar */
+const XIU_COLORS = ['79,194,143','160,112,224','215,220,228','226,84,63'];
+const GROUP_LON = [0, Math.PI/2, Math.PI, Math.PI*1.5];
+const GUARD_KEYS = ['dragon','turtle','tiger','bird'];
+const XIU = [
+  ['角',[[0,0],[.5,-1.1]],'o'], ['亢',[[0,0],[.45,-.35],[.95,-.3],[1.35,.1]],'o'], ['氐',[[0,0],[1,-.25],[1.15,.65],[.15,.85]],'c'],
+  ['房',[[0,0],[.15,.45],[.32,.95],[.45,1.45]],'o'], ['心',[[0,0],[.5,.32],[1,.18]],'o'],
+  ['尾',[[0,0],[.15,.5],[.25,1],[.2,1.5],[.05,1.9],[.25,2.3],[.65,2.5],[1.05,2.35],[1.2,1.95]],'o'], ['箕',[[0,0],[.8,-.15],[1,.55],[.1,.7]],'c'],
+  ['斗',[[0,0],[.6,.05],[.7,.55],[.05,.6],[1.15,.85],[1.6,.95]],[[0,1],[1,2],[2,3],[3,0],[2,4],[4,5]]],
+  ['牛',[[0,0],[.5,.3],[1,0],[.5,.85],[.2,1.2],[.8,1.2]],[[0,1],[1,2],[1,3],[3,4],[3,5]]],
+  ['女',[[0,0],[.5,-.2],[.9,.2],[.4,.5]],'c'], ['虚',[[0,0],[.2,.9]],'o'], ['危',[[0,0],[.6,.6],[1.1,.1]],'o'],
+  ['室',[[0,0],[.15,1.2]],'o'], ['壁',[[0,0],[-.1,1]],'o'],
+  ['奎',[[0,0],[.4,-.35],[.9,-.45],[1.4,-.3],[1.7,.05],[1.6,.45],[1.2,.7],[.7,.75],[.25,.55],[.05,.3]],'c'],
+  ['娄',[[0,0],[.5,.25],[.95,.15]],'o'], ['胃',[[0,0],[.6,-.2],[.4,.4]],'c'],
+  ['昴',[[0,0],[.18,.1],[.34,.04],[.24,-.12],[.06,-.16],[.4,-.14],[.28,.22]],[[0,1],[1,2],[2,3],[3,4],[4,0],[2,5],[1,6]]],
+  ['毕',[[0,0],[.35,.45],[.7,.9],[.8,.35],[1.25,.2],[1.55,.05],[.95,.75],[.45,1.05]],[[0,1],[1,2],[1,3],[3,4],[4,5],[2,6],[2,7]]],
+  ['觜',[[0,0],[.18,.12],[.05,.25]],'c'],
+  ['参',[[0,0],[1.1,.1],[1.25,1.55],[-.05,1.45],[.4,.72],[.6,.78],[.8,.84]],[[0,4],[1,6],[4,5],[5,6],[4,3],[6,2]]],
+  ['井',[[0,0],[.4,.1],[.8,.2],[1.2,.3],[0,.55],[.4,.65],[.8,.75],[1.2,.85]],[[0,1],[1,2],[2,3],[4,5],[5,6],[6,7],[0,4],[3,7]]],
+  ['鬼',[[0,0],[.45,0],[.45,.4],[0,.4]],'c'], ['柳',[[0,0],[.3,.25],[.55,.55],[.7,.9],[.75,1.25],[.65,1.55],[.45,1.75],[.2,1.85]],'o'],
+  ['星',[[0,0],[.4,-.15],[.8,-.1],[1.1,.15],[1.25,.5],[1.2,.85],[1,1.1]],'o'], ['张',[[0,0],[.5,-.2],[1,0],[1.1,.5],[.6,.75],[.1,.55]],'c'],
+  ['翼',[[0,0],[.3,.2],[.55,.35],[.8,.5],[1.6,0],[1.3,.2],[1.05,.35],[.8,.9],[.8,1.3],[.2,.6],[1.4,.6]],[[0,1],[1,2],[2,3],[4,5],[5,6],[6,3],[3,7],[7,8],[1,9],[5,10]]],
+  ['轸',[[0,0],[.7,-.1],[.8,.55],[.05,.6]],'c']
+];
+function sphereBand(lon, lat, tilt){
+  const x = Math.cos(lat)*Math.cos(lon), y = Math.sin(lat), z = Math.cos(lat)*Math.sin(lon);
+  return {x, y:y*Math.cos(tilt) - z*Math.sin(tilt), z:y*Math.sin(tilt) + z*Math.cos(tilt)};
+}
+function tangentAt(c, dx, dy){
+  const up = Math.abs(c.y) > .95 ? {x:1,y:0,z:0} : {x:0,y:1,z:0};
+  let e1 = {x:up.y*c.z - up.z*c.y, y:up.z*c.x - up.x*c.z, z:up.x*c.y - up.y*c.x}; const n1 = Math.hypot(e1.x, e1.y, e1.z); e1 = {x:e1.x/n1, y:e1.y/n1, z:e1.z/n1};
+  const e2 = {x:c.y*e1.z - c.z*e1.y, y:c.z*e1.x - c.x*e1.z, z:c.x*e1.y - c.y*e1.x};
+  const v = {x:c.x + dx*e1.x + dy*e2.x, y:c.y + dx*e1.y + dy*e2.y, z:c.z + dx*e1.z + dy*e2.z};
+  const n = Math.hypot(v.x, v.y, v.z); return {v:{x:v.x/n, y:v.y/n, z:v.z/n}, e1, e2};
+}
+const GUARD_CENTRES = GROUP_LON.map(l => ({x:Math.cos(l), y:0, z:Math.sin(l)}));
+const xiuRand = randomFrom(2828);
+const ASTER_U = .036, RING_R = .52;
+const ASTERISMS = XIU.map(([name, pts, edges], i) => {
+  const g = Math.floor(i/7), k = i % 7, phi = -Math.PI/2 + k*TAU/7;
+  const mc = tangentAt(GUARD_CENTRES[g], Math.cos(phi)*RING_R, -Math.sin(phi)*RING_R).v;
+  const cx = pts.reduce((a, q) => a + q[0], 0)/pts.length, cy = pts.reduce((a, q) => a + q[1], 0)/pts.length;
+  const stars = pts.map(([x, y]) => ({v:tangentAt(mc, (x - cx)*ASTER_U, -(y - cy)*ASTER_U).v, m:.45 + xiuRand()*.75}));
+  const low = Math.max(...pts.map(q => q[1])) - cy;
+  const e = edges === 'o' ? pts.slice(1).map((_, j) => [j, j + 1]) : edges === 'c' ? pts.map((_, j) => [j, (j + 1) % pts.length]) : edges;
+  return {name, group:g, c:mc, stars, edges:e, label:tangentAt(mc, 0, -Math.max(low*ASTER_U + .045, .1)).v};
+});
+const GROUP_LABELS = GUARD_CENTRES.map(c => tangentAt(c, 0, -.33).v);
+const MILKY = (() => { const r = randomFrom(7171), out = []; for (let i = 0; i < 64; i++){ const lon = i*TAU/64 + (r() - .5)*.06; out.push({p:sphereBand(lon, (r() - .5)*.14, 1.15), s:.10 + r()*.12, a:.05 + r()*.07}); } return out; })();
+const SPECKS = (() => { const r = randomFrom(9090), out = []; for (let i = 0; i < 300; i++){ const y = r()*2 - 1, t = r()*TAU, q = Math.sqrt(1 - y*y); out.push({p:{x:Math.cos(t)*q, y, z:Math.sin(t)*q}, s:.4 + r()*.55, a:.2 + r()*.3}); } return out; })();
+const bgOff = {yaw:0, pitch:0};
+function skyView(){ return {yaw:cam.yaw + bgOff.yaw, pitch:cam.pitch + bgOff.pitch}; }
+function anchorSky(){
+  const s = selected(), g = s ? Math.max(0, XIU_GROUPS.findIndex(n => n.endsWith(s.lunar.sector.name))) : 3;
+  const c = GUARD_CENTRES[g];
+  bgOff.yaw = Math.atan2(c.x, c.z) - cam.yaw; bgOff.pitch = 0 - cam.pitch; bdKey = '';
+}
+function bproj(v, vw, S, cx, cy){
+  const c = Math.cos(vw.yaw), s2 = Math.sin(vw.yaw), cP = Math.cos(vw.pitch), sP = Math.sin(vw.pitch);
+  const x = v.x*c - v.z*s2, z = v.x*s2 + v.z*c, vv = v.y*cP - z*sP, d = v.y*sP + z*cP;
+  return {x:cx + x*S, y:cy - vv*S, d};
+}
+function bdGlyph(x, y, r, rgb, a){
+  const hx = x + r*.7, hy = y + r*.5, g = fctx.createRadialGradient(hx, hy, 0, hx, hy, r*4.6);
+  g.addColorStop(0, `rgba(${rgb},${(.26*a).toFixed(3)})`); g.addColorStop(.45, `rgba(${rgb},${(.08*a).toFixed(3)})`); g.addColorStop(1, `rgba(${rgb},0)`);
+  fctx.fillStyle = g; fctx.fillRect(hx - r*4.6, hy - r*4.6, r*9.2, r*9.2);
+  const i = r*.16;
+  fctx.beginPath(); fctx.moveTo(x, y - r); fctx.quadraticCurveTo(x + i, y - i, x + r, y); fctx.quadraticCurveTo(x + i, y + i, x, y + r); fctx.quadraticCurveTo(x - i, y + i, x - r, y); fctx.quadraticCurveTo(x - i, y - i, x, y - r);
+  fctx.fillStyle = `rgba(${mixWhite(rgb, .55)},${a.toFixed(3)})`; fctx.fill();
+  fctx.beginPath(); fctx.arc(x, y, r*.28, 0, TAU); fctx.fillStyle = `rgba(255,255,255,${(a*.9).toFixed(3)})`; fctx.fill();
+}
+/* ---------- v15 · 四象 Han-tile silhouettes on the sky; 二十八宿 as star lines and names on an overlay ---------- */
+const HAN_RGB = [[79, 194, 143], [160, 112, 224], [215, 220, 228], [226, 84, 63]];
+const HAN_ANG = .9;   /* angular size of each 四象 silhouette on the sky (radians) */
+const HAN_SPRITES = [0, 1, 2, 3].map(() => ({cv:null, px:0}));
+const fx = $('skyfx'), fctx = fx.getContext('2d');
+document.body.insertBefore(fx, bd.nextSibling);
+let skyVisible = [], beastsVisible = [];
+function drawBackdrop(){
+  const vw = skyView();
+  const sr = $('sky').getBoundingClientRect(), ox = sr.left, oy = sr.top;
+  const key = [W, H, VW, VH, ox.toFixed(1), oy.toFixed(1), vw.yaw.toFixed(4), vw.pitch.toFixed(4)].join('|');
+  if (key === bdKey) return; bdKey = key;
+  const mob = W < 600, S = mob ? W*.95 : Math.max(W, H)*.62, cx = ox + W*.5, cy = oy + H*.52;
+  const fade = d => Math.max(0, Math.min(1, (d - .02)/.3));
+  bctx.setTransform(DPR, 0, 0, DPR, 0, 0); bctx.clearRect(0, 0, VW, VH);
+  fctx.setTransform(DPR, 0, 0, DPR, 0, 0); fctx.clearRect(0, 0, VW, VH);
+  const SM = Math.max(VW, VH)*.95;
+  for (const m of MILKY){
+    const q = bproj(m.p, vw, SM, cx, cy); if (q.d < .05) continue;
+    const r = m.s*SM, a = m.a*Math.min(1, q.d*1.6);
+    const g = bctx.createRadialGradient(q.x, q.y, 0, q.x, q.y, r);
+    g.addColorStop(0, `rgba(150,154,164,${(a*.8).toFixed(3)})`); g.addColorStop(.55, `rgba(120,124,134,${(a*.36).toFixed(3)})`); g.addColorStop(1, 'rgba(100,104,112,0)');
+    bctx.fillStyle = g; bctx.fillRect(q.x - r, q.y - r, r*2, r*2);
+  }
+  for (const sp of SPECKS){ const q = bproj(sp.p, vw, SM, cx, cy); if (q.d < .05 || q.x < -2 || q.y < -2 || q.x > VW + 2 || q.y > VH + 2) continue; bctx.beginPath(); bctx.arc(q.x, q.y, sp.s, 0, TAU); bctx.fillStyle = `rgba(214,218,226,${(sp.a*Math.min(1, q.d*1.5)).toFixed(3)})`; bctx.fill(); }
+    /* ---- 四象: Han-tile silhouettes laid on the sphere (affine from the projected tangent frame) ---- */
+  skyVisible = []; beastsVisible = [];
+  const eps = .01;
+  GUARD_CENTRES.forEach((c, gi) => {
+    const q = bproj(c, vw, S, cx, cy); if (q.d <= .02) return;
+    if (q.d > .2 && q.x > -S*.3 && q.x < VW + S*.3 && q.x > ox - S*.3 && q.x < ox + W + S*.3) skyVisible.push(XIU_GROUPS[gi]);
+    const t = tangentAt(c, 0, 0), q1 = bproj({x:c.x + t.e1.x*eps, y:c.y + t.e1.y*eps, z:c.z + t.e1.z*eps}, vw, S, cx, cy), q2 = bproj({x:c.x + t.e2.x*eps, y:c.y + t.e2.y*eps, z:c.z + t.e2.z*eps}, vw, S, cx, cy);
+    const E1 = [(q1.x - q.x)/eps, (q1.y - q.y)/eps], E2 = [(q2.x - q.x)/eps, (q2.y - q.y)/eps];
+    const gd = HAN_SPRITES[gi], px = Math.max(96, Math.min(1500, Math.round(HAN_ANG*S*DPR/64)*64));
+    if (!gd.cv || gd.px !== px){ gd.cv = HAN.render(HAN.keys[gi], px, HAN_RGB[gi], HAN_RGB[gi].map(v => Math.round(v + (255 - v)*.5))); gd.px = px; }
+    const k = HAN_ANG/px;
+    bctx.save();
+    bctx.setTransform(DPR*E1[0]*k, DPR*E1[1]*k, -DPR*E2[0]*k, -DPR*E2[1]*k, DPR*q.x, DPR*q.y);
+    bctx.globalAlpha = (mob ? .9 : .94)*fade(q.d);
+    bctx.drawImage(gd.cv, -px/2, -px/2);
+    bctx.restore();
+  });
+  ASTERISMS.forEach((ast, k) => { const q = bproj(ast.c, vw, S, cx, cy); if (q.d > .2 && q.x > 0 && q.x < VW && q.y > 0 && q.y < VH) beastsVisible.push(ast.name); });
+  /* ---- overlay: group names, asterisms, mansion names ---- */
+  GUARD_CENTRES.forEach((c, gi) => {
+    const lq = bproj(GROUP_LABELS[gi], vw, S, cx, cy);
+    if (lq.d > .05){ fctx.font = '400 12px "PingFang SC","Noto Sans SC",system-ui,sans-serif'; fctx.textAlign = 'center'; fctx.fillStyle = `rgba(${mixWhite(XIU_COLORS[gi], .35)},${(.6*fade(lq.d)).toFixed(3)})`; fctx.fillText(XIU_GROUPS[gi], lq.x, lq.y); }
+  });
+  fctx.lineCap = 'round'; fctx.font = '300 11px "PingFang SC","Noto Sans SC",system-ui,sans-serif'; fctx.textAlign = 'center';
+  ASTERISMS.forEach((ast, k) => {
+    const qs = ast.stars.map(s => bproj(s.v, vw, S, cx, cy));
+    const dmin = Math.min(...qs.map(q => q.d)); if (dmin < .03) return;
+    const f = fade(dmin), rgb = XIU_COLORS[ast.group];
+    fctx.lineWidth = .8; fctx.strokeStyle = `rgba(${mixWhite(rgb, .45)},${(.34*f).toFixed(3)})`; fctx.beginPath();
+    for (const [a, b] of ast.edges){ fctx.moveTo(qs[a].x, qs[a].y); fctx.lineTo(qs[b].x, qs[b].y); }
+    fctx.stroke();
+    ast.stars.forEach((s, i) => bdGlyph(qs[i].x, qs[i].y, 1.4 + s.m*1.8, rgb, (.5 + s.m*.3)*f));
+    const lq = bproj(ast.label, vw, S, cx, cy);
+    fctx.font = '400 11.5px "PingFang SC","Noto Sans SC",system-ui,sans-serif'; fctx.fillStyle = `rgba(${mixWhite(rgb, .55)},${(.8*f).toFixed(3)})`; fctx.fillText(ast.name, lq.x, lq.y + 4);
+  });
+}
+
+/* ---------- v13 · button motion system ---------- */
+(() => {
+  const TINT = {jade:'79,194,143', pearl:'215,220,228', cinnabar:'226,84,63', amethyst:'160,112,224'};
+  const fxKind = b => {
+    const id = b.id || '';
+    if (id === 'resetView') return 'spin';
+    if (id === 'zoomIn') return 'zin';
+    if (id === 'zoomOut') return 'zout';
+    if (b.hasAttribute('data-new') || id === 'newBtn' || id === 'dockNew' || id === 'lensNew') return 'bloom';
+    if (/Close$/.test(id) || id === 'formCancel' || id === 'confirmNo') return 'twist';
+    if (id === 'dockSearch') return 'wobble';
+    if (id === 'randomBtn' || id === 'dockRandom') return 'dice';
+    if (id === 'dataOpen' || id === 'dockData') return 'gear';
+    if (id === 'exportBtn') return 'drop';
+    if (id === 'importBtn' || id === 'pickBtn') return 'rise';
+    if (id === 'cameraBtn' || id === 'snapBtn') return 'flash';
+    if (id === 'confirmYes' || b.classList.contains('danger')) return 'shake';
+    if (id === 'saveBtn' || id === 'persistBtn') return 'check';
+    if (id === 'sheetHandle') return 'stretch';
+    if (b.classList.contains('tab') || b.classList.contains('chip') || /^(mode|sheet|dock)(Solar|Lunar|Detail|List)$/.test(id)) return 'slide';
+    return 'pop';
+  };
+  const tintOf = b => b.classList.contains('danger') ? TINT.cinnabar : (b.classList.contains('primary') || b.classList.contains('lensBtn') ? TINT.jade : (b.closest('#dataDialog') ? TINT.amethyst : TINT.pearl));
+  const prep = b => {
+    if (b.__fx) return b.__fx;
+    if (getComputedStyle(b).position === 'static') b.style.position = 'relative';
+    const w = document.createElement('span'); w.className = 'fxw'; w.setAttribute('aria-hidden', 'true'); b.appendChild(w);
+    b.style.setProperty('--rc', tintOf(b));
+    return (b.__fx = w);
+  };
+  const calmNow = () => document.documentElement.classList.contains('calm') || mqReduce.matches;
+  document.addEventListener('pointerdown', e => {
+    const b = e.target.closest('button'); if (!b || b.disabled || calmNow()) return;
+    const w = prep(b), r = b.getBoundingClientRect();
+    const x = (e.clientX || r.left + r.width/2) - r.left, y = (e.clientY || r.top + r.height/2) - r.top;
+    const far = Math.hypot(Math.max(x, r.width - x), Math.max(y, r.height - y));
+    const s = document.createElement('span'); s.className = 'rpl';
+    s.style.setProperty('--x', x + 'px'); s.style.setProperty('--y', y + 'px'); s.style.setProperty('--s', (far*2.3/12).toFixed(2));
+    w.appendChild(s); s.addEventListener('animationend', () => s.remove(), {once:true});
+    while (w.children.length > 4) w.firstChild.remove();
+  }, {passive:true, capture:true});
+  document.addEventListener('pointerover', e => {
+    const b = e.target.closest('button'); if (!b || b.disabled || calmNow() || e.pointerType === 'touch') return;
+    if (e.relatedTarget && b.contains(e.relatedTarget)) return;
+    prep(b); b.classList.remove('fxh'); void b.offsetWidth; b.classList.add('fxh');
+    clearTimeout(b.__fxh); b.__fxh = setTimeout(() => b.classList.remove('fxh'), 950);
+  }, {passive:true});
+  document.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b || b.disabled || calmNow()) return;
+    prep(b);
+    const k = fxKind(b), cls = 'fx-' + k;
+    b.classList.remove(cls); void b.offsetWidth; b.classList.add(cls);
+    clearTimeout(b.__fxk); b.__fxk = setTimeout(() => b.classList.remove(cls), 1000);
+    if (k === 'bloom' || k === 'check' || k === 'flash'){
+      const ring = document.createElement('span'); ring.className = 'fxRing'; ring.setAttribute('aria-hidden', 'true');
+      b.appendChild(ring); ring.addEventListener('animationend', () => ring.remove(), {once:true});
+    }
+  }, true);
+})();
+
+/* ---------- v5 modes ---------- */
+function setMode(mode, {keepSelection = false} = {}){
+  mode = mode === 'demo' ? 'demo' : 'mine';
+  if (ui.mode === mode){ renderList(); return; }
+  ui.mode = mode; archiveStagger = true; hover = null; hidePeek(); clearFlyers(); haloLevels.clear();
+  if (!keepSelection){
+    const want = byId(mode === 'demo' ? ui.selDemo : ui.selMine);
+    const s = want && !!want.demo === (mode === 'demo') ? want : sorted(allItems())[0] || null;
+    selectedId = s?.id || null; ui.selectedId = selectedId;
+    if (s) focusStar(s);
+  }
+  saveUI(); renderAll();
+  if (motionOK()){ canvas.getAnimations().forEach(a => a.cancel()); canvas.animate([{opacity:.15, filter:'blur(6px)'},{opacity:1, filter:'blur(0)'}], {duration:420, easing:'cubic-bezier(.2,.8,.2,1)'}); }
+  announce(mode === 'demo' ? '已切换到示例星图：12 个 AI 生成示例，非真实记录' : `已切换到我的星图：${mine.length} 颗星`);
+}
+
+/* ---------- v4 hover, press & focus feedback ---------- */
+function placePeek(p){
+  if (!peekItem || !p) return;
+  const pk = $('peek'), w = pk.offsetWidth || 258, h = pk.offsetHeight || 74;
+  let x = p.x + 18, y = p.y - h - 14;
+  if (x + w > W - 8) x = p.x - w - 18;
+  if (y < 8) y = p.y + 18;
+  x = clamp(x, 8, Math.max(8, W - w - 8)); y = clamp(y, 8, Math.max(8, H - h - 8));
+  pk.style.setProperty('--px', x.toFixed(1) + 'px'); pk.style.setProperty('--py', y.toFixed(1) + 'px');
+}
+function showPeek(item){
+  if (!item || ui.page !== 'atlas'){ hidePeek(); return; }
+  const pk = $('peek'), fresh = !pk.classList.contains('show');
+  if (peekItem?.id !== item.id){
+    pk.querySelector('img').src = imageUrl(item);
+    pk.querySelector('strong').textContent = item.title;
+    pk.querySelector('small').textContent = `${item.lunar.monthName}${item.lunar.dayName} · ${item.lunar.sector.name}`;
+    pk.querySelector('em').textContent = solarShort(item.date) + (item.demo ? ' · AI 示例' : ' · 我的照片');
+  }
+  peekItem = item;
+  const o = picks.find(q => q.item.id === item.id);
+  if (fresh){ pk.style.transition = 'none'; placePeek(o?.p); void pk.offsetWidth; pk.style.transition = ''; }
+  else placePeek(o?.p);
+  pk.classList.add('show');
+}
+function hidePeek(){ peekItem = null; $('peek').classList.remove('show'); }
+{
+  const SHEEN = '.btn,.chip,.tab,.dock button,.lensBtn';
+  const PRESS = SHEEN + ',.tile,.row';
+  const aim = (t, e) => { const r = t.getBoundingClientRect(); t.style.setProperty('--mx', (e.clientX - r.left).toFixed(0) + 'px'); t.style.setProperty('--my', (e.clientY - r.top).toFixed(0) + 'px'); };
+  document.addEventListener('pointermove', e => { if (e.pointerType !== 'mouse') return; const t = e.target.closest?.(SHEEN); if (t) aim(t, e); }, {passive:true});
+  document.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'mouse') return;
+    const t = e.target.closest?.(PRESS); if (!t) return;
+    aim(t, e); t.classList.add('pressed');
+    const off = () => { setTimeout(() => t.classList.remove('pressed'), 90); for (const n of ['pointerup','pointercancel','pointerleave']) t.removeEventListener(n, off); };
+    for (const n of ['pointerup','pointercancel','pointerleave']) t.addEventListener(n, off);
+  }, {passive:true});
+  document.addEventListener('focusin', e => { const t = e.target.closest?.(SHEEN); if (t && t.matches(':focus-visible')){ t.style.setProperty('--mx', '50%'); t.style.setProperty('--my', '20%'); } });
+}
+window.__lunarAtlasTest = { starPoint:id => { const it = byId(id); return it ? screenOf(it, cam) : null; }, halo:id => haloLevels.get(id) || 0, peek:() => peekItem?.id || null, drawn:() => picks.length, mode:() => ui.mode, stars:() => allItems().map(m => ({id:m.id, slot:m.slot, x:m.position.x, y:m.position.y, z:m.position.z})), cam:() => ({...cam, ty:target.yaw, tp:target.pitch, sel:selectedId}), backdrop:() => ({...skyView(), visible:skyVisible.slice(), asterisms:ASTERISMS.length, names:ASTERISMS.map(a => a.name).join(''), guards:(typeof HAN !== 'undefined' ? HAN.keys.join(',') : ''), beasts:beastsVisible.slice(), gl:'none', meshes:0, han:HAN_SPRITES.filter(x => x.cv).length, inert:getComputedStyle(bd).pointerEvents}), centre:() => { const r = canvas.getBoundingClientRect(); return {x:r.left + W*.5, y:r.top + H*.52}; } };
+
+/* ---------- boot ---------- */
+{
+  const t = isoDate(), l = lunarDate(t);
+  $('todayLunar').textContent = l ? `${l.yearName}年 · ${l.monthName}${l.dayName}` : t;
+  $('todaySolar').textContent = solarText(t);
+}
+setPage(ui.page === 'archive' ? 'archive' : 'atlas');
+renderAll(); resize(); updateHints(); placeLenses(); pageReady = true;
+(async () => {
+  try{
+    db = await openDB();
+    const saved = await idb('memories','readonly', s => s.getAll());
+    const loaded = [];
+    for (const r of saved || []) if (r && r.blob instanceof Blob && typeof r.id === 'string'){ const it = prepare(r); if (it) loaded.push(it); }
+    const temp = mine.filter(m => m.temp);
+    mine = loaded.concat(temp.filter(t => !loaded.some(x => x.id === t.id)));
+    env.persist = true;
+    /* v5 migration: give every story a persistent sphere slot (oldest first), keep valid unique ones */
+    const seen = new Set(), needs = [];
+    for (const m of mine.slice().sort((a, b) => String(a.createdAt || '').localeCompare(String(b.createdAt || '')) || a.date.localeCompare(b.date) || a.id.localeCompare(b.id))){
+      if (validSlot(m.slot) && !seen.has(m.slot)) seen.add(m.slot); else needs.push(m);
+    }
+    for (const m of needs){ let n = 0; while (seen.has(n)) n++; seen.add(n); m.slot = n; m.position = slotVector(n); if (!m.temp){ try{ await idb('memories','readwrite', st => st.put(rawOf(m))); }catch{} } }
+    for (const t of temp){ try{ await persistItem(t); }catch{} }
+  }catch(err){
+    env.persist = false; db = null;
+    if (err?.message === 'blocked') notify('另一个标签页正在使用旧版星藏，请关闭它后刷新。');
+  }
+  if (!selected()){ const first = sorted(allItems())[0]; selectedId = first?.id || null; ui.selectedId = selectedId; }
+  focusStar(selected(), true);   /* opening view: one star centred and discoverable */
+  anchorSky();
+  updateHints(); renderAll(); updateStorage();
+  const draft = ls.get(DRAFT_KEY);
+  if (draft?.open){
+    const target2 = draft.editId ? mine.find(m => m.id === draft.editId) : null;
+    if (!draft.editId || target2){
+      openForm(target2, draft);
+      if (draft.hasPhoto && db){ try{ const d = await idb('drafts','readonly', s => s.get('current')); if (d?.blob instanceof Blob) setPicture(d.blob); }catch{} }
+      notify('已恢复上次未保存的草稿', {label:'丢弃草稿', run: closeForm});
+    } else clearDraft();
+  }
+})();
+}
+</script>
+</body>
+</html>
