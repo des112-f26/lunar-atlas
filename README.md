@@ -1,14 +1,15 @@
-# 星藏 · Lunar Atlas
+# Lunar Atlas · 星藏
 
-这是一个静态网站：一段回忆，一颗星，所有回忆都只保存在你自己的浏览器里（IndexedDB）。
+Lunar Atlas is an interactive memory journal for DES 112. Each memory becomes a star you can revisit. The sky draws on the Four Symbols and the Twenty-Eight Lunar Mansions of Chinese astronomy.
 
-## 部署到 GitHub Pages
-1. 把这个文件夹里的内容（`index.html`、`assets/`、`.nojekyll`）放到仓库的根目录，或者放到 `docs/` 目录。
-2. 在仓库的 **Settings → Pages** 里，选择「Deploy from a branch」，然后选对应的分支和文件夹。
-3. 稍等片刻，打开 `https://<用户名>.github.io/<仓库名>/` 就能看到网站。
+[Open Lunar Atlas](https://des112-f26.github.io/lunar-atlas/)
 
-## 说明
-- 文件里所有路径都是相对路径，可以放在任意子路径下运行。
-- 网站只自带 12 段示例回忆（AI 生成的示例图片，在 `assets/demo/`），不包含任何个人数据。
-- 回忆只保存在访问者自己的浏览器里，不会上传到任何地方。可以用「数据 → 导出备份 / 恢复备份」迁移。
-- 标题字体通过 Google Fonts 加载；加载不到时，会自动改用系统字体。
+## Explore the sky
+
+Choose **示例星图 (Demo Sky)** to explore 12 fictional memories with AI-generated images. Drag to turn the sky and select a glowing gray star to read its story. The four guardian figures mark the changing seasons.
+
+Choose **我的星图 (My Sky)** to start your own collection. Select **收藏一刻 (Save a Moment)** to add a memory. Your entries stay in this browser on this device. Use **数据 (Data)** to export a backup or import one on another device.
+
+## Website files
+
+GitHub Pages serves the site from the root of the main branch. The interface is in index.html and the demo photographs are in assets/demo/. The page uses a system font when Google Fonts is unavailable.
